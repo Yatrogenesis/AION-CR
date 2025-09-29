@@ -983,10 +983,461 @@ impl ComprehensiveLegalLibrary {
     // Additional implementation methods would continue here...
     // For brevity, I'm showing the pattern for how these would be implemented
 
-    fn create_basel_i_rule(&self) -> AionResult<AtomicLegalRule> { todo!() }
-    fn create_basel_ii_rule(&self) -> AionResult<AtomicLegalRule> { todo!() }
-    fn create_basel_iv_rule(&self) -> AionResult<AtomicLegalRule> { todo!() }
-    fn create_car_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
+    fn create_basel_i_rule(&self) -> AionResult<AtomicLegalRule> {
+        Ok(AtomicLegalRule {
+            id: Uuid::new_v4(),
+            rule_code: "BIS.BASEL.I.CAPITAL.ADEQUACY".to_string(),
+            hierarchy_path: vec!["Basel Committee", "Basel I", "Capital Adequacy"].into_iter().map(|s| s.to_string()).collect(),
+            rule_text: "Banks must maintain capital equal to at least 8% of their risk-weighted assets. Tier 1 capital must constitute at least 4% of risk-weighted assets.".to_string(),
+            plain_language: "Banks must hold capital worth at least 8% of their risky assets as a safety buffer.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec!["Global".to_string(), "G10 Countries".to_string()],
+                temporal_scope: TemporalScope {
+                    effective_date: chrono::DateTime::parse_from_rfc3339("1992-12-31T23:59:59Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![TransitionalPeriod {
+                        description: "Phase-in period for implementation".to_string(),
+                        start_date: chrono::DateTime::parse_from_rfc3339("1988-07-15T00:00:00Z").unwrap().with_timezone(&Utc),
+                        end_date: chrono::DateTime::parse_from_rfc3339("1992-12-31T23:59:59Z").unwrap().with_timezone(&Utc),
+                        requirements: vec!["Gradual increase in capital ratios".to_string()],
+                    }],
+                    grandfathering_provisions: Vec::new(),
+                },
+                entity_scope: vec!["Commercial Banks".to_string(), "Investment Banks".to_string(), "Credit Institutions".to_string()],
+                activity_scope: vec!["Lending".to_string(), "Trading".to_string(), "Investment Activities".to_string()],
+                data_scope: vec!["Risk-weighted Assets".to_string(), "Capital Ratios".to_string()],
+                transaction_scope: vec!["Credit Risk Exposures".to_string(), "Market Risk Exposures".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_type: "Entity Type".to_string(),
+                    description: "Applies to internationally active banks".to_string(),
+                    criteria: vec!["International operations".to_string(), "Significant cross-border activities".to_string()],
+                    exceptions: vec!["Small community banks may be exempt".to_string()],
+                }
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_type: "Regulatory".to_string(),
+                    description: "National supervisors may apply more stringent requirements".to_string(),
+                    conditions: vec!["Local regulatory discretion".to_string()],
+                    duration: None,
+                }
+            ],
+            interpretations: vec![
+                RuleInterpretation {
+                    jurisdiction: "United States".to_string(),
+                    interpretation: "Implemented through Federal Reserve regulations with additional leverage ratio requirements".to_string(),
+                    certainty_level: 0.95,
+                    source_authority: "Federal Reserve Board".to_string(),
+                }
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                enforcement_body: "Basel Committee on Banking Supervision".to_string(),
+                investigation_process: InvestigationProcess {
+                    initiation_triggers: vec!["Supervisory review".to_string(), "Bank examination".to_string()],
+                    investigation_steps: vec!["Capital adequacy assessment".to_string(), "Risk-weighted asset calculation review".to_string()],
+                    evidence_requirements: vec!["Financial statements".to_string(), "Risk management reports".to_string()],
+                    timelines: HashMap::from([("Initial review".to_string(), std::time::Duration::from_secs(2592000))]),
+                    rights_of_accused: vec!["Right to explanation".to_string(), "Right to corrective action period".to_string()],
+                },
+                appeal_process: AppealProcess {
+                    appeal_grounds: vec!["Calculation error".to_string(), "Misapplication of standards".to_string()],
+                    appeal_timeline: std::time::Duration::from_secs(5184000),
+                    appeal_authority: "National Banking Supervisor".to_string(),
+                    process_steps: vec!["Written appeal submission".to_string(), "Review by senior officials".to_string()],
+                    final_authority: "Central Bank Governor".to_string(),
+                },
+                sanctions: vec![
+                    Sanction {
+                        sanction_type: "Capital Restoration Order".to_string(),
+                        description: "Requirement to raise additional capital".to_string(),
+                        severity: SanctionSeverity::Medium,
+                        financial_impact: Some("Variable based on capital shortfall".to_string()),
+                        duration: Some(std::time::Duration::from_secs(15552000)),
+                    }
+                ],
+            },
+            penalties: vec![
+                Penalty {
+                    penalty_type: "Regulatory Action".to_string(),
+                    description: "Restrictions on business activities until capital compliance restored".to_string(),
+                    monetary_amount: None,
+                    imprisonment_term: None,
+                    other_consequences: vec!["Dividend restrictions".to_string(), "Asset growth limitations".to_string()],
+                }
+            ],
+            related_rules: vec!["BIS.BASEL.II".to_string(), "BIS.BASEL.III".to_string()],
+            precedents: Vec::new(),
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "International Convergence of Capital Measurement and Capital Standards".to_string(),
+                    issuing_authority: "Basel Committee on Banking Supervision".to_string(),
+                    publication_date: chrono::DateTime::parse_from_rfc3339("1988-07-15T00:00:00Z").unwrap().with_timezone(&Utc),
+                    document_type: "Framework".to_string(),
+                    summary: "Original Basel Accord establishing minimum capital standards".to_string(),
+                }
+            ],
+            metadata: RuleMetadata {
+                creation_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "1.0".to_string(),
+                sources: vec!["Basel Committee on Banking Supervision".to_string()],
+                tags: vec!["basel".to_string(), "capital-adequacy".to_string(), "banking".to_string(), "global".to_string()],
+                complexity_score: 7.5,
+                usage_frequency: 9.5,
+                consultation_required: true,
+            },
+        })
+    }
+    fn create_basel_ii_rule(&self) -> AionResult<AtomicLegalRule> {
+        Ok(AtomicLegalRule {
+            id: Uuid::new_v4(),
+            rule_code: "BIS.BASEL.II.THREE.PILLARS".to_string(),
+            hierarchy_path: vec!["Basel Committee", "Basel II", "Three Pillars Framework"].into_iter().map(|s| s.to_string()).collect(),
+            rule_text: "Banks must meet minimum capital requirements (Pillar 1), be subject to supervisory review (Pillar 2), and maintain market discipline through disclosure (Pillar 3). Capital adequacy must be calculated using standardized, foundation IRB, or advanced IRB approaches for credit risk, and standardized or advanced measurement approaches for operational risk.".to_string(),
+            plain_language: "Banks must calculate capital requirements more precisely using internal risk models, undergo regular supervisory review, and publicly disclose their risk information.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec!["Global".to_string(), "Basel Committee Jurisdictions".to_string()],
+                temporal_scope: TemporalScope {
+                    effective_date: chrono::DateTime::parse_from_rfc3339("2007-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![TransitionalPeriod {
+                        description: "Implementation period for advanced approaches".to_string(),
+                        start_date: chrono::DateTime::parse_from_rfc3339("2004-06-26T00:00:00Z").unwrap().with_timezone(&Utc),
+                        end_date: chrono::DateTime::parse_from_rfc3339("2007-12-31T23:59:59Z").unwrap().with_timezone(&Utc),
+                        requirements: vec!["IRB model validation".to_string(), "Systems development".to_string()],
+                    }],
+                    grandfathering_provisions: Vec::new(),
+                },
+                entity_scope: vec!["International Banks".to_string(), "Complex Financial Institutions".to_string()],
+                activity_scope: vec!["Credit Risk Management".to_string(), "Operational Risk Management".to_string(), "Market Risk Management".to_string()],
+                data_scope: vec!["PD Models".to_string(), "LGD Models".to_string(), "EAD Models".to_string(), "Operational Risk Data".to_string()],
+                transaction_scope: vec!["All Credit Exposures".to_string(), "Trading Book".to_string(), "Banking Book".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_type: "IRB Qualification".to_string(),
+                    description: "Banks must meet minimum requirements to use internal ratings-based approaches".to_string(),
+                    criteria: vec!["Model validation".to_string(), "Historical data availability".to_string(), "Risk management systems".to_string()],
+                    exceptions: vec!["Can revert to standardized approach".to_string()],
+                }
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_type: "Implementation".to_string(),
+                    description: "National discretions available for specific elements".to_string(),
+                    conditions: vec!["Supervisory approval required".to_string()],
+                    duration: None,
+                }
+            ],
+            interpretations: vec![
+                RuleInterpretation {
+                    jurisdiction: "European Union".to_string(),
+                    interpretation: "Implemented through CRD IV with additional buffer requirements".to_string(),
+                    certainty_level: 0.92,
+                    source_authority: "European Banking Authority".to_string(),
+                }
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                enforcement_body: "National Banking Supervisors".to_string(),
+                investigation_process: InvestigationProcess {
+                    initiation_triggers: vec!["Model performance issues".to_string(), "Capital adequacy concerns".to_string()],
+                    investigation_steps: vec!["Model validation review".to_string(), "Back-testing analysis".to_string(), "Stress testing review".to_string()],
+                    evidence_requirements: vec!["Model documentation".to_string(), "Historical performance data".to_string(), "Risk reports".to_string()],
+                    timelines: HashMap::from([("Model review".to_string(), std::time::Duration::from_secs(7776000))]),
+                    rights_of_accused: vec!["Model remediation period".to_string(), "Expert consultation rights".to_string()],
+                },
+                appeal_process: AppealProcess {
+                    appeal_grounds: vec!["Model methodology disputes".to_string(), "Data quality issues".to_string()],
+                    appeal_timeline: std::time::Duration::from_secs(7776000),
+                    appeal_authority: "Senior Supervisory Authority".to_string(),
+                    process_steps: vec!["Technical review panel".to_string(), "Independent model validation".to_string()],
+                    final_authority: "Banking Supervision Board".to_string(),
+                },
+                sanctions: vec![
+                    Sanction {
+                        sanction_type: "Model Qualification Removal".to_string(),
+                        description: "Requirement to revert to standardized approach".to_string(),
+                        severity: SanctionSeverity::High,
+                        financial_impact: Some("Increased capital requirements".to_string()),
+                        duration: Some(std::time::Duration::from_secs(31104000)),
+                    }
+                ],
+            },
+            penalties: vec![
+                Penalty {
+                    penalty_type: "Capital Surcharge".to_string(),
+                    description: "Additional capital requirements for model deficiencies".to_string(),
+                    monetary_amount: None,
+                    imprisonment_term: None,
+                    other_consequences: vec!["Operational restrictions".to_string(), "Enhanced monitoring".to_string()],
+                }
+            ],
+            related_rules: vec!["BIS.BASEL.I".to_string(), "BIS.BASEL.III".to_string(), "BIS.BASEL.IV".to_string()],
+            precedents: Vec::new(),
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "International Convergence of Capital Measurement and Capital Standards: A Revised Framework".to_string(),
+                    issuing_authority: "Basel Committee on Banking Supervision".to_string(),
+                    publication_date: chrono::DateTime::parse_from_rfc3339("2004-06-26T00:00:00Z").unwrap().with_timezone(&Utc),
+                    document_type: "Comprehensive Framework".to_string(),
+                    summary: "Revised capital framework with three-pillar approach".to_string(),
+                }
+            ],
+            metadata: RuleMetadata {
+                creation_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "2.0".to_string(),
+                sources: vec!["Basel Committee on Banking Supervision".to_string()],
+                tags: vec!["basel-ii".to_string(), "three-pillars".to_string(), "irb".to_string(), "operational-risk".to_string()],
+                complexity_score: 9.2,
+                usage_frequency: 8.8,
+                consultation_required: true,
+            },
+        })
+    }
+    fn create_basel_iv_rule(&self) -> AionResult<AtomicLegalRule> {
+        Ok(AtomicLegalRule {
+            id: Uuid::new_v4(),
+            rule_code: "BIS.BASEL.IV.FINALIZATION".to_string(),
+            hierarchy_path: vec!["Basel Committee", "Basel IV", "Finalization Package"].into_iter().map(|s| s.to_string()).collect(),
+            rule_text: "Banks must implement revised standardized approaches for credit risk, operational risk, and market risk. Output floor of 72.5% of standardized approaches applies to IRB banks. Leverage ratio buffer for G-SIBs ranges from 3% to 4.5% depending on systemic importance score.".to_string(),
+            plain_language: "Banks must use updated, more conservative methods to calculate risk and cannot benefit from internal models beyond a 72.5% reduction from standardized calculations.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec!["Global".to_string(), "Basel Committee Member Jurisdictions".to_string()],
+                temporal_scope: TemporalScope {
+                    effective_date: chrono::DateTime::parse_from_rfc3339("2023-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![TransitionalPeriod {
+                        description: "Phase-in period for output floor".to_string(),
+                        start_date: chrono::DateTime::parse_from_rfc3339("2023-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        end_date: chrono::DateTime::parse_from_rfc3339("2028-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        requirements: vec!["Gradual phase-in of output floor from 50% to 72.5%".to_string()],
+                    }],
+                    grandfathering_provisions: Vec::new(),
+                },
+                entity_scope: vec!["Global Systemically Important Banks".to_string(), "International Banks".to_string(), "IRB Banks".to_string()],
+                activity_scope: vec!["Credit Risk Calculation".to_string(), "Operational Risk Calculation".to_string(), "Market Risk Calculation".to_string()],
+                data_scope: vec!["RWA Calculations".to_string(), "CVA Risk".to_string(), "Counterparty Credit Risk".to_string()],
+                transaction_scope: vec!["All Banking Book Exposures".to_string(), "Trading Book Positions".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_type: "Output Floor Application".to_string(),
+                    description: "Applies only to banks using internal ratings-based approaches".to_string(),
+                    criteria: vec!["IRB approval status".to_string(), "Material use of internal models".to_string()],
+                    exceptions: vec!["Standardized approach banks exempt from output floor".to_string()],
+                }
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_type: "Proportionality".to_string(),
+                    description: "National supervisors may apply proportional implementation for smaller banks".to_string(),
+                    conditions: vec!["Size and complexity thresholds".to_string(), "Systemic importance assessment".to_string()],
+                    duration: None,
+                }
+            ],
+            interpretations: vec![
+                RuleInterpretation {
+                    jurisdiction: "United States".to_string(),
+                    interpretation: "Implemented through federal banking agency rules with focus on Category I and II banks".to_string(),
+                    certainty_level: 0.88,
+                    source_authority: "Federal Reserve, OCC, FDIC".to_string(),
+                }
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                enforcement_body: "National Prudential Supervisors".to_string(),
+                investigation_process: InvestigationProcess {
+                    initiation_triggers: vec!["Capital adequacy review".to_string(), "Output floor breach".to_string()],
+                    investigation_steps: vec!["RWA calculation verification".to_string(), "Model performance assessment".to_string()],
+                    evidence_requirements: vec!["Calculation methodologies".to_string(), "System documentation".to_string(), "Back-testing results".to_string()],
+                    timelines: HashMap::from([("Implementation review".to_string(), std::time::Duration::from_secs(15552000))]),
+                    rights_of_accused: vec!["Remediation timeline".to_string(), "Technical consultation rights".to_string()],
+                },
+                appeal_process: AppealProcess {
+                    appeal_grounds: vec!["Technical calculation disputes".to_string(), "Implementation timeline issues".to_string()],
+                    appeal_timeline: std::time::Duration::from_secs(10368000),
+                    appeal_authority: "Banking Supervision Appeals Panel".to_string(),
+                    process_steps: vec!["Technical expert review".to_string(), "Industry consultation".to_string()],
+                    final_authority: "Financial Stability Board".to_string(),
+                },
+                sanctions: vec![
+                    Sanction {
+                        sanction_type: "Capital Conservation Buffer".to_string(),
+                        description: "Additional capital requirements for non-compliance".to_string(),
+                        severity: SanctionSeverity::High,
+                        financial_impact: Some("Up to 2.5% additional capital".to_string()),
+                        duration: Some(std::time::Duration::from_secs(31536000)),
+                    }
+                ],
+            },
+            penalties: vec![
+                Penalty {
+                    penalty_type: "Dividend Restrictions".to_string(),
+                    description: "Limitations on capital distributions during non-compliance periods".to_string(),
+                    monetary_amount: None,
+                    imprisonment_term: None,
+                    other_consequences: vec!["Share buyback restrictions".to_string(), "Bonus payment limitations".to_string()],
+                }
+            ],
+            related_rules: vec!["BIS.BASEL.III.LEVERAGE".to_string(), "BIS.BASEL.III.LIQUIDITY".to_string()],
+            precedents: Vec::new(),
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "Basel III: Finalising post-crisis reforms".to_string(),
+                    issuing_authority: "Basel Committee on Banking Supervision".to_string(),
+                    publication_date: chrono::DateTime::parse_from_rfc3339("2017-12-07T00:00:00Z").unwrap().with_timezone(&Utc),
+                    document_type: "Final Standard".to_string(),
+                    summary: "Completing the Basel III regulatory reform package".to_string(),
+                }
+            ],
+            metadata: RuleMetadata {
+                creation_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "4.0".to_string(),
+                sources: vec!["Basel Committee on Banking Supervision".to_string()],
+                tags: vec!["basel-iv".to_string(), "output-floor".to_string(), "finalization".to_string(), "rwa".to_string()],
+                complexity_score: 9.8,
+                usage_frequency: 8.2,
+                consultation_required: true,
+            },
+        })
+    }
+    fn create_car_rules(&self) -> AionResult<Vec<AtomicLegalRule>> {
+        Ok(vec![
+            AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "BIS.CAR.MINIMUM.8PCT".to_string(),
+                hierarchy_path: vec!["Basel Framework", "Capital Adequacy Ratio", "Minimum Requirement"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "Banks must maintain a total capital ratio of at least 8% of risk-weighted assets, comprising Tier 1 capital of at least 6% and Common Equity Tier 1 capital of at least 4.5%.".to_string(),
+                plain_language: "Banks must keep capital worth at least 8% of their risk-weighted assets as a safety buffer, with the highest quality capital being at least 4.5%.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["Global".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("2013-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: Vec::new(),
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Banks".to_string(), "Credit Institutions".to_string()],
+                    activity_scope: vec!["All Banking Activities".to_string()],
+                    data_scope: vec!["Total Capital".to_string(), "Risk-Weighted Assets".to_string()],
+                    transaction_scope: vec!["All Credit Exposures".to_string()],
+                },
+                applicability_conditions: Vec::new(),
+                exceptions: Vec::new(),
+                interpretations: Vec::new(),
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "National Banking Supervisors".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Quarterly reporting".to_string(), "Supervisory examination".to_string()],
+                        investigation_steps: vec!["Capital calculation review".to_string()],
+                        evidence_requirements: vec!["Capital adequacy reports".to_string()],
+                        timelines: HashMap::new(),
+                        rights_of_accused: Vec::new(),
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: Vec::new(),
+                        appeal_timeline: std::time::Duration::from_secs(0),
+                        appeal_authority: String::new(),
+                        process_steps: Vec::new(),
+                        final_authority: String::new(),
+                    },
+                    sanctions: Vec::new(),
+                },
+                penalties: Vec::new(),
+                related_rules: vec!["BIS.BASEL.III".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: Vec::new(),
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "3.0".to_string(),
+                    sources: vec!["Basel III Framework".to_string()],
+                    tags: vec!["capital-adequacy".to_string(), "minimum-requirements".to_string()],
+                    complexity_score: 6.8,
+                    usage_frequency: 9.8,
+                    consultation_required: false,
+                },
+            },
+            AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "BIS.CAR.CONSERVATION.BUFFER".to_string(),
+                hierarchy_path: vec!["Basel Framework", "Capital Adequacy Ratio", "Conservation Buffer"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "Banks must maintain a capital conservation buffer of 2.5% of Common Equity Tier 1 capital above the minimum requirement. Banks with ratios below the combined buffer requirement face restrictions on distributions.".to_string(),
+                plain_language: "Banks must hold an extra 2.5% of high-quality capital as a buffer, and face restrictions on paying dividends if they don't meet this requirement.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["Global".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("2016-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: vec![TransitionalPeriod {
+                            description: "Phase-in of conservation buffer".to_string(),
+                            start_date: chrono::DateTime::parse_from_rfc3339("2016-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                            end_date: chrono::DateTime::parse_from_rfc3339("2019-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                            requirements: vec!["0.625% annual increase until 2.5% reached".to_string()],
+                        }],
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Banks".to_string(), "Credit Institutions".to_string()],
+                    activity_scope: vec!["Distribution Decisions".to_string(), "Capital Planning".to_string()],
+                    data_scope: vec!["CET1 Ratio".to_string(), "Distribution Amounts".to_string()],
+                    transaction_scope: vec!["Dividend Payments".to_string(), "Share Buybacks".to_string()],
+                },
+                applicability_conditions: vec![
+                    ApplicabilityCondition {
+                        condition_type: "Buffer Breach".to_string(),
+                        description: "Distribution restrictions apply when CET1 ratio falls below buffer requirement".to_string(),
+                        criteria: vec!["CET1 ratio < 7%".to_string()],
+                        exceptions: Vec::new(),
+                    }
+                ],
+                exceptions: Vec::new(),
+                interpretations: Vec::new(),
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "National Banking Supervisors".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Buffer breach notification".to_string()],
+                        investigation_steps: vec!["Distribution plan review".to_string()],
+                        evidence_requirements: vec!["Capital conservation plan".to_string()],
+                        timelines: HashMap::new(),
+                        rights_of_accused: Vec::new(),
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: Vec::new(),
+                        appeal_timeline: std::time::Duration::from_secs(0),
+                        appeal_authority: String::new(),
+                        process_steps: Vec::new(),
+                        final_authority: String::new(),
+                    },
+                    sanctions: vec![
+                        Sanction {
+                            sanction_type: "Distribution Restrictions".to_string(),
+                            description: "Automatic restrictions on capital distributions".to_string(),
+                            severity: SanctionSeverity::Medium,
+                            financial_impact: Some("Proportional to buffer shortfall".to_string()),
+                            duration: Some(std::time::Duration::from_secs(7776000)),
+                        }
+                    ],
+                },
+                penalties: Vec::new(),
+                related_rules: vec!["BIS.CAR.MINIMUM.8PCT".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: Vec::new(),
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "3.0".to_string(),
+                    sources: vec!["Basel III Framework".to_string()],
+                    tags: vec!["capital-conservation".to_string(), "buffer".to_string(), "distributions".to_string()],
+                    complexity_score: 7.2,
+                    usage_frequency: 8.5,
+                    consultation_required: false,
+                },
+            }
+        ])
+    }
     fn create_lcr_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_nsfr_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_leverage_ratio_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
@@ -994,7 +1445,183 @@ impl ComprehensiveLegalLibrary {
     fn create_operational_risk_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_market_risk_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_credit_risk_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
-    fn create_eu_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
+    fn create_eu_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            country: "European Union".to_string(),
+            primary_banking_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "EU.CRR.575.2013".to_string(),
+                hierarchy_path: vec!["European Union", "Capital Requirements Regulation", "CRR 575/2013"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "Credit institutions shall at all times satisfy the own funds requirements laid down in this Regulation. The total risk exposure amount shall be calculated as the sum of risk-weighted exposure amounts for credit risk, market risk, operational risk and CVA risk.".to_string(),
+                plain_language: "EU banks must always meet capital requirements by calculating their total risk exposure across all types of banking risks.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["European Union".to_string(), "EEA Countries".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("2014-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: Vec::new(),
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Credit Institutions".to_string(), "Investment Firms".to_string()],
+                    activity_scope: vec!["All Banking Activities".to_string(), "Investment Services".to_string()],
+                    data_scope: vec!["Own Funds".to_string(), "Risk Exposures".to_string()],
+                    transaction_scope: vec!["All Exposures".to_string()],
+                },
+                applicability_conditions: Vec::new(),
+                exceptions: Vec::new(),
+                interpretations: Vec::new(),
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "National Competent Authorities".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Supervisory review".to_string(), "SREP assessment".to_string()],
+                        investigation_steps: vec!["Capital adequacy assessment".to_string(), "Risk assessment".to_string()],
+                        evidence_requirements: vec!["COREP reports".to_string(), "FINREP reports".to_string()],
+                        timelines: HashMap::new(),
+                        rights_of_accused: Vec::new(),
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: Vec::new(),
+                        appeal_timeline: std::time::Duration::from_secs(0),
+                        appeal_authority: String::new(),
+                        process_steps: Vec::new(),
+                        final_authority: String::new(),
+                    },
+                    sanctions: Vec::new(),
+                },
+                penalties: Vec::new(),
+                related_rules: vec!["EU.CRD.IV".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: Vec::new(),
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "1.0".to_string(),
+                    sources: vec!["EU Regulation 575/2013".to_string()],
+                    tags: vec!["eu".to_string(), "banking".to_string(), "capital-requirements".to_string()],
+                    complexity_score: 8.5,
+                    usage_frequency: 9.2,
+                    consultation_required: true,
+                },
+            },
+            licensing_requirements: vec![
+                AtomicLegalRule {
+                    id: Uuid::new_v4(),
+                    rule_code: "EU.CRD.LICENSING.ART8".to_string(),
+                    hierarchy_path: vec!["European Union", "CRD IV", "Licensing", "Article 8"].into_iter().map(|s| s.to_string()).collect(),
+                    rule_text: "The taking up of the business of credit institutions shall be subject to prior authorisation. Authorisation shall be granted only where certain conditions are met including initial capital requirements.".to_string(),
+                    plain_language: "Banks must get permission before starting operations and meet specific requirements including minimum capital.".to_string(),
+                    scope: RuleScope {
+                        geographic_scope: vec!["European Union".to_string()],
+                        temporal_scope: TemporalScope {
+                            effective_date: chrono::DateTime::parse_from_rfc3339("2014-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                            expiration_date: None,
+                            transitional_periods: Vec::new(),
+                            grandfathering_provisions: Vec::new(),
+                        },
+                        entity_scope: vec!["Prospective Credit Institutions".to_string()],
+                        activity_scope: vec!["Credit Institution Authorization".to_string()],
+                        data_scope: vec!["Initial Capital".to_string(), "Business Plan".to_string()],
+                        transaction_scope: Vec::new(),
+                    },
+                    applicability_conditions: Vec::new(),
+                    exceptions: Vec::new(),
+                    interpretations: Vec::new(),
+                    enforcement_mechanism: CodeEnforcementMechanism {
+                        enforcement_body: "National Competent Authorities".to_string(),
+                        investigation_process: InvestigationProcess {
+                            initiation_triggers: vec!["License application".to_string()],
+                            investigation_steps: vec!["Fit and proper assessment".to_string(), "Capital verification".to_string()],
+                            evidence_requirements: vec!["Business plan".to_string(), "Financial projections".to_string()],
+                            timelines: HashMap::new(),
+                            rights_of_accused: Vec::new(),
+                        },
+                        appeal_process: AppealProcess {
+                            appeal_grounds: Vec::new(),
+                            appeal_timeline: std::time::Duration::from_secs(0),
+                            appeal_authority: String::new(),
+                            process_steps: Vec::new(),
+                            final_authority: String::new(),
+                        },
+                        sanctions: Vec::new(),
+                    },
+                    penalties: Vec::new(),
+                    related_rules: Vec::new(),
+                    precedents: Vec::new(),
+                    guidance_documents: Vec::new(),
+                    metadata: RuleMetadata {
+                        creation_date: Utc::now(),
+                        last_updated: Utc::now(),
+                        version: "1.0".to_string(),
+                        sources: vec!["EU Directive 2013/36/EU".to_string()],
+                        tags: vec!["licensing".to_string(), "authorization".to_string()],
+                        complexity_score: 7.0,
+                        usage_frequency: 6.5,
+                        consultation_required: true,
+                    },
+                }
+            ],
+            capital_requirements: vec![
+                AtomicLegalRule {
+                    id: Uuid::new_v4(),
+                    rule_code: "EU.CRR.INITIAL.CAPITAL.ART12".to_string(),
+                    hierarchy_path: vec!["European Union", "CRR", "Initial Capital", "Article 12"].into_iter().map(|s| s.to_string()).collect(),
+                    rule_text: "The initial capital of a credit institution shall be at least EUR 5 million. Member States may require a higher amount of initial capital.".to_string(),
+                    plain_language: "New banks must start with at least €5 million in capital, and countries can require more.".to_string(),
+                    scope: RuleScope {
+                        geographic_scope: vec!["European Union".to_string()],
+                        temporal_scope: TemporalScope {
+                            effective_date: chrono::DateTime::parse_from_rfc3339("2014-01-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                            expiration_date: None,
+                            transitional_periods: Vec::new(),
+                            grandfathering_provisions: Vec::new(),
+                        },
+                        entity_scope: vec!["New Credit Institutions".to_string()],
+                        activity_scope: vec!["Bank Formation".to_string()],
+                        data_scope: vec!["Initial Capital Amount".to_string()],
+                        transaction_scope: Vec::new(),
+                    },
+                    applicability_conditions: Vec::new(),
+                    exceptions: Vec::new(),
+                    interpretations: Vec::new(),
+                    enforcement_mechanism: CodeEnforcementMechanism {
+                        enforcement_body: "National Banking Supervisors".to_string(),
+                        investigation_process: InvestigationProcess {
+                            initiation_triggers: Vec::new(),
+                            investigation_steps: Vec::new(),
+                            evidence_requirements: Vec::new(),
+                            timelines: HashMap::new(),
+                            rights_of_accused: Vec::new(),
+                        },
+                        appeal_process: AppealProcess {
+                            appeal_grounds: Vec::new(),
+                            appeal_timeline: std::time::Duration::from_secs(0),
+                            appeal_authority: String::new(),
+                            process_steps: Vec::new(),
+                            final_authority: String::new(),
+                        },
+                        sanctions: Vec::new(),
+                    },
+                    penalties: Vec::new(),
+                    related_rules: Vec::new(),
+                    precedents: Vec::new(),
+                    guidance_documents: Vec::new(),
+                    metadata: RuleMetadata {
+                        creation_date: Utc::now(),
+                        last_updated: Utc::now(),
+                        version: "1.0".to_string(),
+                        sources: vec!["EU Regulation 575/2013".to_string()],
+                        tags: vec!["initial-capital".to_string(), "minimum-requirements".to_string()],
+                        complexity_score: 4.5,
+                        usage_frequency: 7.0,
+                        consultation_required: false,
+                    },
+                }
+            ],
+            governance_requirements: Vec::new(),
+            consumer_protection: Vec::new(),
+            resolution_framework: Vec::new(),
+        })
+    }
     fn create_uk_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
     fn create_japan_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
     fn create_china_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
@@ -1006,24 +1633,599 @@ impl ComprehensiveLegalLibrary {
     fn create_us_banking_governance_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_us_banking_consumer_protection(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_us_banking_resolution_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
-    fn create_us_securities_act(&self) -> AionResult<SecuritiesAct> { todo!() }
+    fn create_us_securities_act(&self) -> AionResult<SecuritiesAct> {
+        Ok(SecuritiesAct {
+            jurisdiction: "United States".to_string(),
+            primary_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "US.SECURITIES.ACT.1933.SEC5".to_string(),
+                hierarchy_path: vec!["United States", "Securities Act 1933", "Section 5"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "Unless a registration statement is in effect as to a security, it shall be unlawful for any person, directly or indirectly, to offer to sell or sell such security through the use or medium of any prospectus or otherwise.".to_string(),
+                plain_language: "You cannot sell securities to the public unless they are registered with the SEC or qualify for an exemption.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["United States".to_string(), "US Securities Markets".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("1933-05-27T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: Vec::new(),
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Issuers".to_string(), "Underwriters".to_string(), "Dealers".to_string()],
+                    activity_scope: vec!["Securities Offerings".to_string(), "Public Sales".to_string()],
+                    data_scope: vec!["Registration Statements".to_string(), "Prospectuses".to_string()],
+                    transaction_scope: vec!["Public Offerings".to_string(), "Secondary Sales".to_string()],
+                },
+                applicability_conditions: vec![
+                    ApplicabilityCondition {
+                        condition_type: "Public Offering".to_string(),
+                        description: "Applies to offers and sales to the public".to_string(),
+                        criteria: vec!["General solicitation".to_string(), "Public advertisement".to_string()],
+                        exceptions: vec!["Private placements".to_string(), "Accredited investor exemptions".to_string()],
+                    }
+                ],
+                exceptions: vec![
+                    LegalException {
+                        exception_type: "Registration Exemption".to_string(),
+                        description: "Various exemptions available under Regulation D, S, A+".to_string(),
+                        conditions: vec!["Specific investor qualifications".to_string(), "Offering size limitations".to_string()],
+                        duration: None,
+                    }
+                ],
+                interpretations: vec![
+                    RuleInterpretation {
+                        jurisdiction: "United States".to_string(),
+                        interpretation: "SEC staff interpretations provide guidance on registration requirements and exemptions".to_string(),
+                        certainty_level: 0.93,
+                        source_authority: "Securities and Exchange Commission".to_string(),
+                    }
+                ],
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "Securities and Exchange Commission".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Unregistered offering complaints".to_string(), "Market surveillance".to_string()],
+                        investigation_steps: vec!["Document review".to_string(), "Witness interviews".to_string(), "Financial analysis".to_string()],
+                        evidence_requirements: vec!["Offering materials".to_string(), "Financial records".to_string(), "Communications records".to_string()],
+                        timelines: HashMap::from([("Investigation completion".to_string(), std::time::Duration::from_secs(31536000))]),
+                        rights_of_accused: vec!["Right to legal representation".to_string(), "Right to Wells notice".to_string()],
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: vec!["Legal interpretation disputes".to_string(), "Factual disputes".to_string()],
+                        appeal_timeline: std::time::Duration::from_secs(15552000),
+                        appeal_authority: "US Federal Courts".to_string(),
+                        process_steps: vec!["Administrative proceeding".to_string(), "Federal court appeal".to_string()],
+                        final_authority: "US Supreme Court".to_string(),
+                    },
+                    sanctions: vec![
+                        Sanction {
+                            sanction_type: "Cease and Desist Order".to_string(),
+                            description: "Order to stop unregistered securities activities".to_string(),
+                            severity: SanctionSeverity::High,
+                            financial_impact: Some("Potential disgorgement of profits".to_string()),
+                            duration: Some(std::time::Duration::from_secs(31536000)),
+                        }
+                    ],
+                },
+                penalties: vec![
+                    Penalty {
+                        penalty_type: "Civil Monetary Penalty".to_string(),
+                        description: "Financial penalties for securities law violations".to_string(),
+                        monetary_amount: Some("Up to $5 million per violation for individuals, $25 million for entities".to_string()),
+                        imprisonment_term: None,
+                        other_consequences: vec!["Industry bar".to_string(), "Officer and director bar".to_string()],
+                    },
+                    Penalty {
+                        penalty_type: "Criminal Penalties".to_string(),
+                        description: "Criminal prosecution for willful violations".to_string(),
+                        monetary_amount: Some("Up to $5 million for individuals, $25 million for entities".to_string()),
+                        imprisonment_term: Some("Up to 20 years".to_string()),
+                        other_consequences: vec!["Federal conviction record".to_string()],
+                    }
+                ],
+                related_rules: vec!["US.SECURITIES.EXCHANGE.ACT.1934".to_string(), "US.INVESTMENT.COMPANY.ACT.1940".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: vec![
+                    GuidanceDocument {
+                        title: "Securities Act Release No. 33-10884".to_string(),
+                        issuing_authority: "Securities and Exchange Commission".to_string(),
+                        publication_date: chrono::DateTime::parse_from_rfc3339("2020-11-02T00:00:00Z").unwrap().with_timezone(&Utc),
+                        document_type: "Interpretive Release".to_string(),
+                        summary: "Framework for Investment Contract Analysis of Digital Assets".to_string(),
+                    }
+                ],
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "1.0".to_string(),
+                    sources: vec!["15 USC 77e".to_string(), "Securities Act of 1933".to_string()],
+                    tags: vec!["securities".to_string(), "registration".to_string(), "public-offerings".to_string()],
+                    complexity_score: 8.7,
+                    usage_frequency: 9.5,
+                    consultation_required: true,
+                },
+            },
+            registration_requirements: Vec::new(),
+            disclosure_requirements: Vec::new(),
+            exemptions: Vec::new(),
+            penalties: Vec::new(),
+            enforcement_mechanisms: Vec::new(),
+        })
+    }
     fn create_eu_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
     fn create_uk_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
     fn create_japan_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
     fn create_canada_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
     fn create_australia_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
-    fn create_hipaa_law(&self) -> AionResult<HealthPrivacyLaw> { todo!() }
+    fn create_hipaa_law(&self) -> AionResult<HealthPrivacyLaw> {
+        Ok(HealthPrivacyLaw {
+            jurisdiction: "United States".to_string(),
+            primary_regulation: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "US.HIPAA.PRIVACY.RULE.164.502".to_string(),
+                hierarchy_path: vec!["United States", "HIPAA", "Privacy Rule", "45 CFR 164.502"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "A covered entity may not use or disclose protected health information, except as permitted or required by this subpart or by subpart C of part 160 of this subchapter. A covered entity may use or disclose protected health information for its own treatment, payment, or health care operations.".to_string(),
+                plain_language: "Healthcare providers and insurers cannot share your health information except for treatment, payment, operations, or with your permission.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["United States".to_string(), "US Territories".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("2003-04-14T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: Vec::new(),
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Covered Entities".to_string(), "Healthcare Providers".to_string(), "Health Plans".to_string(), "Healthcare Clearinghouses".to_string(), "Business Associates".to_string()],
+                    activity_scope: vec!["PHI Use".to_string(), "PHI Disclosure".to_string(), "Treatment".to_string(), "Payment".to_string(), "Healthcare Operations".to_string()],
+                    data_scope: vec!["Protected Health Information".to_string(), "Medical Records".to_string(), "Health Data".to_string()],
+                    transaction_scope: vec!["Healthcare Transactions".to_string(), "Information Sharing".to_string()],
+                },
+                applicability_conditions: vec![
+                    ApplicabilityCondition {
+                        condition_type: "Covered Entity Status".to_string(),
+                        description: "Applies to healthcare providers, health plans, and healthcare clearinghouses that transmit health information electronically".to_string(),
+                        criteria: vec!["Electronic transaction involvement".to_string(), "Healthcare service provision".to_string()],
+                        exceptions: vec!["Small health plans with <$5M annual receipts have compliance delay".to_string()],
+                    }
+                ],
+                exceptions: vec![
+                    LegalException {
+                        exception_type: "Public Health".to_string(),
+                        description: "Disclosures permitted for public health activities".to_string(),
+                        conditions: vec!["Public health authority authorization".to_string(), "Disease prevention purposes".to_string()],
+                        duration: None,
+                    },
+                    LegalException {
+                        exception_type: "Law Enforcement".to_string(),
+                        description: "Limited disclosures permitted for law enforcement purposes".to_string(),
+                        conditions: vec!["Court order or subpoena".to_string(), "Administrative request with specific criteria".to_string()],
+                        duration: None,
+                    }
+                ],
+                interpretations: vec![
+                    RuleInterpretation {
+                        jurisdiction: "United States".to_string(),
+                        interpretation: "HHS guidance emphasizes minimum necessary standard and patient access rights".to_string(),
+                        certainty_level: 0.95,
+                        source_authority: "Department of Health and Human Services".to_string(),
+                    }
+                ],
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "HHS Office for Civil Rights".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Complaint filing".to_string(), "Breach notification".to_string(), "Compliance review".to_string()],
+                        investigation_steps: vec!["Initial review".to_string(), "Information gathering".to_string(), "On-site investigation if warranted".to_string()],
+                        evidence_requirements: vec!["Policies and procedures".to_string(), "Training records".to_string(), "Incident documentation".to_string()],
+                        timelines: HashMap::from([("Investigation completion".to_string(), std::time::Duration::from_secs(15552000))]),
+                        rights_of_accused: vec!["Right to respond".to_string(), "Right to corrective action".to_string()],
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: vec!["Factual disputes".to_string(), "Legal interpretation".to_string()],
+                        appeal_timeline: std::time::Duration::from_secs(2592000),
+                        appeal_authority: "HHS Departmental Appeals Board".to_string(),
+                        process_steps: vec!["Administrative hearing".to_string(), "Written decision".to_string()],
+                        final_authority: "Federal Courts".to_string(),
+                    },
+                    sanctions: vec![
+                        Sanction {
+                            sanction_type: "Corrective Action Plan".to_string(),
+                            description: "Required implementation of compliance measures".to_string(),
+                            severity: SanctionSeverity::Medium,
+                            financial_impact: Some("Implementation costs".to_string()),
+                            duration: Some(std::time::Duration::from_secs(31536000)),
+                        }
+                    ],
+                },
+                penalties: vec![
+                    Penalty {
+                        penalty_type: "Civil Monetary Penalty".to_string(),
+                        description: "Tiered penalties based on knowledge and willfulness".to_string(),
+                        monetary_amount: Some("$100-$50,000 per violation, up to $1.5M annual maximum".to_string()),
+                        imprisonment_term: None,
+                        other_consequences: vec!["Resolution agreement".to_string(), "Compliance monitoring".to_string()],
+                    },
+                    Penalty {
+                        penalty_type: "Criminal Penalties".to_string(),
+                        description: "DOJ prosecution for knowing violations".to_string(),
+                        monetary_amount: Some("Up to $250,000 for individuals, $500,000 for organizations".to_string()),
+                        imprisonment_term: Some("Up to 10 years for malicious disclosure".to_string()),
+                        other_consequences: vec!["Federal conviction record".to_string()],
+                    }
+                ],
+                related_rules: vec!["US.HIPAA.SECURITY.RULE".to_string(), "US.HIPAA.BREACH.NOTIFICATION".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: vec![
+                    GuidanceDocument {
+                        title: "Guidance on HIPAA and COVID-19".to_string(),
+                        issuing_authority: "HHS Office for Civil Rights".to_string(),
+                        publication_date: chrono::DateTime::parse_from_rfc3339("2020-03-24T00:00:00Z").unwrap().with_timezone(&Utc),
+                        document_type: "Guidance".to_string(),
+                        summary: "HIPAA flexibilities during COVID-19 public health emergency".to_string(),
+                    }
+                ],
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "1.0".to_string(),
+                    sources: vec!["45 CFR Part 164".to_string(), "Health Insurance Portability and Accountability Act".to_string()],
+                    tags: vec!["hipaa".to_string(), "privacy".to_string(), "health-information".to_string(), "healthcare".to_string()],
+                    complexity_score: 8.2,
+                    usage_frequency: 9.7,
+                    consultation_required: true,
+                },
+            },
+            patient_rights: Vec::new(),
+            data_handling_requirements: Vec::new(),
+            breach_notification_rules: Vec::new(),
+            enforcement_mechanisms: Vec::new(),
+        })
+    }
     fn create_eu_health_data_regulation(&self) -> AionResult<HealthPrivacyLaw> { todo!() }
     fn create_canada_health_privacy_law(&self) -> AionResult<HealthPrivacyLaw> { todo!() }
-    fn create_fda_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
+    fn create_fda_approval_process(&self) -> AionResult<DrugApprovalProcess> {
+        Ok(DrugApprovalProcess {
+            jurisdiction: "United States".to_string(),
+            regulatory_framework: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "US.FDA.NDA.CFR.314.50".to_string(),
+                hierarchy_path: vec!["United States", "FDA", "New Drug Application", "21 CFR 314.50"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "A new drug application must contain comprehensive information about the drug including chemistry, manufacturing, controls, nonclinical pharmacology and toxicology, human pharmacokinetics and bioavailability, clinical data, risk evaluation and mitigation strategies, and proposed labeling.".to_string(),
+                plain_language: "To get FDA approval for a new drug, companies must submit detailed information about the drug's safety, effectiveness, manufacturing, and proposed labeling.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["United States".to_string(), "US Market".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("1985-02-22T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: Vec::new(),
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Drug Sponsors".to_string(), "Pharmaceutical Companies".to_string(), "Biotechnology Companies".to_string()],
+                    activity_scope: vec!["Drug Development".to_string(), "Clinical Trials".to_string(), "Drug Marketing".to_string()],
+                    data_scope: vec!["Clinical Trial Data".to_string(), "Manufacturing Data".to_string(), "Safety Data".to_string()],
+                    transaction_scope: vec!["New Drug Applications".to_string(), "Drug Approvals".to_string()],
+                },
+                applicability_conditions: vec![
+                    ApplicabilityCondition {
+                        condition_type: "New Drug Definition".to_string(),
+                        description: "Applies to drugs not generally recognized as safe and effective".to_string(),
+                        criteria: vec!["Novel active ingredient".to_string(), "New indication".to_string(), "New dosage form".to_string()],
+                        exceptions: vec!["Over-the-counter monograph drugs".to_string(), "Compounded drugs".to_string()],
+                    }
+                ],
+                exceptions: vec![
+                    LegalException {
+                        exception_type: "Emergency Use Authorization".to_string(),
+                        description: "Expedited pathway during public health emergencies".to_string(),
+                        conditions: vec!["Public health emergency declaration".to_string(), "No adequate alternatives".to_string()],
+                        duration: Some(std::time::Duration::from_secs(31536000)),
+                    }
+                ],
+                interpretations: vec![
+                    RuleInterpretation {
+                        jurisdiction: "United States".to_string(),
+                        interpretation: "FDA guidance documents provide detailed expectations for NDA submissions".to_string(),
+                        certainty_level: 0.92,
+                        source_authority: "Food and Drug Administration".to_string(),
+                    }
+                ],
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "Food and Drug Administration".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["NDA submission".to_string(), "Post-market surveillance".to_string()],
+                        investigation_steps: vec!["Application review".to_string(), "Facility inspection".to_string(), "Clinical data review".to_string()],
+                        evidence_requirements: vec!["Complete NDA dossier".to_string(), "GMP compliance evidence".to_string()],
+                        timelines: HashMap::from([("Standard review".to_string(), std::time::Duration::from_secs(31104000)), ("Priority review".to_string(), std::time::Duration::from_secs(15552000))]),
+                        rights_of_accused: vec!["Right to meeting with FDA".to_string(), "Right to respond to deficiencies".to_string()],
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: vec!["Scientific disagreement".to_string(), "Procedural issues".to_string()],
+                        appeal_timeline: std::time::Duration::from_secs(2592000),
+                        appeal_authority: "FDA Formal Dispute Resolution".to_string(),
+                        process_steps: vec!["Internal FDA review".to_string(), "External advisory committee".to_string()],
+                        final_authority: "FDA Commissioner".to_string(),
+                    },
+                    sanctions: vec![
+                        Sanction {
+                            sanction_type: "Complete Response Letter".to_string(),
+                            description: "Application deficiencies requiring resolution".to_string(),
+                            severity: SanctionSeverity::Medium,
+                            financial_impact: Some("Delayed market entry".to_string()),
+                            duration: Some(std::time::Duration::from_secs(15552000)),
+                        }
+                    ],
+                },
+                penalties: vec![
+                    Penalty {
+                        penalty_type: "Application Denial".to_string(),
+                        description: "Refusal to approve new drug application".to_string(),
+                        monetary_amount: None,
+                        imprisonment_term: None,
+                        other_consequences: vec!["Cannot market drug".to_string(), "Must address deficiencies for resubmission".to_string()],
+                    },
+                    Penalty {
+                        penalty_type: "Criminal Prosecution".to_string(),
+                        description: "Marketing unapproved drugs".to_string(),
+                        monetary_amount: Some("Up to $1,000,000 per violation".to_string()),
+                        imprisonment_term: Some("Up to 3 years".to_string()),
+                        other_consequences: vec!["Consent decree".to_string(), "Facility shutdown".to_string()],
+                    }
+                ],
+                related_rules: vec!["US.FDA.GMP.CFR.211".to_string(), "US.FDA.CLINICAL.TRIALS.CFR.312".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: vec![
+                    GuidanceDocument {
+                        title: "M4: The Common Technical Document".to_string(),
+                        issuing_authority: "FDA Center for Drug Evaluation and Research".to_string(),
+                        publication_date: chrono::DateTime::parse_from_rfc3339("2003-07-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        document_type: "Guidance".to_string(),
+                        summary: "Format and content requirements for NDA submissions".to_string(),
+                    }
+                ],
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "1.0".to_string(),
+                    sources: vec!["21 CFR Part 314".to_string(), "Federal Food, Drug, and Cosmetic Act".to_string()],
+                    tags: vec!["fda".to_string(), "drug-approval".to_string(), "nda".to_string(), "pharmaceutical".to_string()],
+                    complexity_score: 9.5,
+                    usage_frequency: 8.3,
+                    consultation_required: true,
+                },
+            },
+            clinical_trial_phases: Vec::new(),
+            manufacturing_requirements: Vec::new(),
+            labeling_requirements: Vec::new(),
+            post_market_surveillance: Vec::new(),
+        })
+    }
     fn create_ema_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
     fn create_pmda_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
     fn create_health_canada_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
-    fn create_gdpr_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
+    fn create_gdpr_regulation(&self) -> AionResult<GeneralDataProtectionLaw> {
+        Ok(GeneralDataProtectionLaw {
+            jurisdiction: "European Union".to_string(),
+            primary_regulation: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "EU.GDPR.ART.6.LAWFULNESS".to_string(),
+                hierarchy_path: vec!["European Union", "GDPR", "Article 6", "Lawfulness of Processing"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "Processing shall be lawful only if and to the extent that at least one of the following applies: (a) the data subject has given consent; (b) processing is necessary for the performance of a contract; (c) processing is necessary for compliance with a legal obligation; (d) processing is necessary to protect vital interests; (e) processing is necessary for the performance of a task carried out in the public interest; (f) processing is necessary for legitimate interests pursued by the controller.".to_string(),
+                plain_language: "You can only process personal data if you have a valid legal reason, such as consent, contract necessity, legal obligation, vital interests, public task, or legitimate interests.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["European Union".to_string(), "EEA Countries".to_string(), "Extraterritorial (EU residents)".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("2018-05-25T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: Vec::new(),
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["Controllers".to_string(), "Processors".to_string(), "Public Bodies".to_string(), "Private Organizations".to_string()],
+                    activity_scope: vec!["Personal Data Processing".to_string(), "Data Collection".to_string(), "Data Storage".to_string(), "Data Transmission".to_string()],
+                    data_scope: vec!["Personal Data".to_string(), "Special Category Data".to_string(), "Criminal Conviction Data".to_string()],
+                    transaction_scope: vec!["All Data Processing Activities".to_string(), "Cross-border Data Transfers".to_string()],
+                },
+                applicability_conditions: vec![
+                    ApplicabilityCondition {
+                        condition_type: "Territorial Scope".to_string(),
+                        description: "Applies to processing of personal data of data subjects in the EU".to_string(),
+                        criteria: vec!["Data subject in EU".to_string(), "Offering goods/services to EU residents".to_string(), "Monitoring EU residents".to_string()],
+                        exceptions: vec!["Purely personal/household activities".to_string(), "Law enforcement exemptions".to_string()],
+                    }
+                ],
+                exceptions: vec![
+                    LegalException {
+                        exception_type: "Household Exemption".to_string(),
+                        description: "Processing by natural persons for purely personal or household activities".to_string(),
+                        conditions: vec!["No commercial purpose".to_string(), "Personal/family activities only".to_string()],
+                        duration: None,
+                    }
+                ],
+                interpretations: vec![
+                    RuleInterpretation {
+                        jurisdiction: "European Union".to_string(),
+                        interpretation: "EDPB guidelines emphasize that consent must be freely given, specific, informed and unambiguous".to_string(),
+                        certainty_level: 0.94,
+                        source_authority: "European Data Protection Board".to_string(),
+                    }
+                ],
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "National Data Protection Authorities".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Complaints".to_string(), "Data breach notifications".to_string(), "Ex-officio investigations".to_string()],
+                        investigation_steps: vec!["Preliminary assessment".to_string(), "Formal investigation".to_string(), "On-site inspections".to_string()],
+                        evidence_requirements: vec!["Data processing records".to_string(), "Privacy policies".to_string(), "Technical measures documentation".to_string()],
+                        timelines: HashMap::from([("Investigation completion".to_string(), std::time::Duration::from_secs(31536000))]),
+                        rights_of_accused: vec!["Right to be heard".to_string(), "Right to legal representation".to_string()],
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: vec!["Procedural violations".to_string(), "Disproportionate penalties".to_string()],
+                        appeal_timeline: std::time::Duration::from_secs(7776000),
+                        appeal_authority: "National Courts".to_string(),
+                        process_steps: vec!["Administrative appeal".to_string(), "Judicial review".to_string()],
+                        final_authority: "European Court of Justice".to_string(),
+                    },
+                    sanctions: vec![
+                        Sanction {
+                            sanction_type: "Corrective Measures".to_string(),
+                            description: "Orders to bring processing into compliance".to_string(),
+                            severity: SanctionSeverity::Medium,
+                            financial_impact: Some("Implementation costs".to_string()),
+                            duration: Some(std::time::Duration::from_secs(15552000)),
+                        }
+                    ],
+                },
+                penalties: vec![
+                    Penalty {
+                        penalty_type: "Administrative Fine".to_string(),
+                        description: "Financial penalties for GDPR violations".to_string(),
+                        monetary_amount: Some("Up to €20 million or 4% of annual global turnover, whichever is higher".to_string()),
+                        imprisonment_term: None,
+                        other_consequences: vec!["Reputational damage".to_string(), "Mandatory compliance measures".to_string()],
+                    }
+                ],
+                related_rules: vec!["EU.GDPR.ART.7.CONSENT".to_string(), "EU.GDPR.ART.17.RIGHT.ERASURE".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: vec![
+                    GuidanceDocument {
+                        title: "Guidelines 05/2020 on consent under Regulation 2016/679".to_string(),
+                        issuing_authority: "European Data Protection Board".to_string(),
+                        publication_date: chrono::DateTime::parse_from_rfc3339("2020-05-04T00:00:00Z").unwrap().with_timezone(&Utc),
+                        document_type: "Guidelines".to_string(),
+                        summary: "Guidance on valid consent under GDPR".to_string(),
+                    }
+                ],
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "1.0".to_string(),
+                    sources: vec!["Regulation (EU) 2016/679".to_string(), "General Data Protection Regulation".to_string()],
+                    tags: vec!["gdpr".to_string(), "data-protection".to_string(), "privacy".to_string(), "lawful-basis".to_string()],
+                    complexity_score: 8.8,
+                    usage_frequency: 9.9,
+                    consultation_required: true,
+                },
+            },
+            data_subject_rights: Vec::new(),
+            controller_obligations: Vec::new(),
+            processor_obligations: Vec::new(),
+            transfer_mechanisms: Vec::new(),
+            enforcement_procedures: Vec::new(),
+        })
+    }
     fn create_ccpa_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
     fn create_lgpd_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
     fn create_pipeda_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
-    fn create_eu_ai_act(&self) -> AionResult<AIGovernanceFramework> { todo!() }
+    fn create_eu_ai_act(&self) -> AionResult<AIGovernanceFramework> {
+        Ok(AIGovernanceFramework {
+            jurisdiction: "European Union".to_string(),
+            primary_regulation: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "EU.AI.ACT.HIGH.RISK.ART.6".to_string(),
+                hierarchy_path: vec!["European Union", "AI Act", "Article 6", "High-Risk AI Systems"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "High-risk AI systems shall comply with the requirements set out in this Chapter. High-risk AI systems are those AI systems that are both covered by harmonised standards referred to in Article 40 and are either: (a) intended to be used as safety components; (b) products covered by Union harmonisation legislation listed in Annex II; or (c) AI systems listed in Annex III.".to_string(),
+                plain_language: "AI systems that pose high risks to health, safety, or fundamental rights must meet strict requirements including risk management, data governance, transparency, and human oversight.".to_string(),
+                scope: RuleScope {
+                    geographic_scope: vec!["European Union".to_string(), "EEA Countries".to_string()],
+                    temporal_scope: TemporalScope {
+                        effective_date: chrono::DateTime::parse_from_rfc3339("2025-08-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        expiration_date: None,
+                        transitional_periods: vec![TransitionalPeriod {
+                            description: "Grace period for existing systems".to_string(),
+                            start_date: chrono::DateTime::parse_from_rfc3339("2025-08-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                            end_date: chrono::DateTime::parse_from_rfc3339("2027-08-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                            requirements: vec!["Compliance for systems already on market".to_string()],
+                        }],
+                        grandfathering_provisions: Vec::new(),
+                    },
+                    entity_scope: vec!["AI System Providers".to_string(), "AI System Deployers".to_string(), "Importers".to_string(), "Distributors".to_string()],
+                    activity_scope: vec!["AI System Development".to_string(), "AI System Deployment".to_string(), "AI System Marketing".to_string()],
+                    data_scope: vec!["Training Data".to_string(), "Validation Data".to_string(), "Testing Data".to_string()],
+                    transaction_scope: vec!["AI System Placement on Market".to_string(), "AI System Operation".to_string()],
+                },
+                applicability_conditions: vec![
+                    ApplicabilityCondition {
+                        condition_type: "High-Risk Classification".to_string(),
+                        description: "Applies to AI systems classified as high-risk based on their intended purpose and use case".to_string(),
+                        criteria: vec!["Listed in Annex III".to_string(), "Safety component function".to_string(), "Covered by Union harmonisation legislation".to_string()],
+                        exceptions: vec!["Military and defense use".to_string(), "Research and testing".to_string()],
+                    }
+                ],
+                exceptions: vec![
+                    LegalException {
+                        exception_type: "Research Exemption".to_string(),
+                        description: "AI systems developed or used exclusively for research, testing and development activities".to_string(),
+                        conditions: vec!["Non-commercial research".to_string(), "Appropriate safeguards in place".to_string()],
+                        duration: None,
+                    }
+                ],
+                interpretations: vec![
+                    RuleInterpretation {
+                        jurisdiction: "European Union".to_string(),
+                        interpretation: "Commission guidance emphasizes proportionate risk management measures".to_string(),
+                        certainty_level: 0.85,
+                        source_authority: "European Commission".to_string(),
+                    }
+                ],
+                enforcement_mechanism: CodeEnforcementMechanism {
+                    enforcement_body: "National Market Surveillance Authorities".to_string(),
+                    investigation_process: InvestigationProcess {
+                        initiation_triggers: vec!["Complaints".to_string(), "Market surveillance".to_string(), "Incident reports".to_string()],
+                        investigation_steps: vec!["Conformity assessment".to_string(), "Technical documentation review".to_string(), "Post-market monitoring review".to_string()],
+                        evidence_requirements: vec!["Technical documentation".to_string(), "Risk management system".to_string(), "Quality management system".to_string()],
+                        timelines: HashMap::from([("Investigation completion".to_string(), std::time::Duration::from_secs(15552000))]),
+                        rights_of_accused: vec!["Right to be heard".to_string(), "Right to corrective measures".to_string()],
+                    },
+                    appeal_process: AppealProcess {
+                        appeal_grounds: vec!["Classification disputes".to_string(), "Proportionality challenges".to_string()],
+                        appeal_timeline: std::time::Duration::from_secs(5184000),
+                        appeal_authority: "National Courts".to_string(),
+                        process_steps: vec!["Administrative review".to_string(), "Judicial proceedings".to_string()],
+                        final_authority: "European Court of Justice".to_string(),
+                    },
+                    sanctions: vec![
+                        Sanction {
+                            sanction_type: "Market Withdrawal".to_string(),
+                            description: "Requirement to withdraw non-compliant AI systems from market".to_string(),
+                            severity: SanctionSeverity::High,
+                            financial_impact: Some("Market withdrawal and recall costs".to_string()),
+                            duration: Some(std::time::Duration::from_secs(7776000)),
+                        }
+                    ],
+                },
+                penalties: vec![
+                    Penalty {
+                        penalty_type: "Administrative Fine".to_string(),
+                        description: "Financial penalties for AI Act violations".to_string(),
+                        monetary_amount: Some("Up to €35 million or 7% of annual global turnover for high-risk system violations".to_string()),
+                        imprisonment_term: None,
+                        other_consequences: vec!["Compliance orders".to_string(), "Enhanced monitoring".to_string()],
+                    }
+                ],
+                related_rules: vec!["EU.AI.ACT.PROHIBITED.PRACTICES".to_string(), "EU.AI.ACT.FOUNDATION.MODELS".to_string()],
+                precedents: Vec::new(),
+                guidance_documents: vec![
+                    GuidanceDocument {
+                        title: "Guidelines on the Application of the AI Act".to_string(),
+                        issuing_authority: "European Commission".to_string(),
+                        publication_date: chrono::DateTime::parse_from_rfc3339("2024-12-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                        document_type: "Guidelines".to_string(),
+                        summary: "Implementation guidance for AI Act compliance".to_string(),
+                    }
+                ],
+                metadata: RuleMetadata {
+                    creation_date: Utc::now(),
+                    last_updated: Utc::now(),
+                    version: "1.0".to_string(),
+                    sources: vec!["Regulation (EU) 2024/1689".to_string(), "EU Artificial Intelligence Act".to_string()],
+                    tags: vec!["ai-act".to_string(), "artificial-intelligence".to_string(), "high-risk".to_string(), "governance".to_string()],
+                    complexity_score: 9.2,
+                    usage_frequency: 7.8,
+                    consultation_required: true,
+                },
+            },
+            risk_categories: Vec::new(),
+            prohibited_practices: Vec::new(),
+            high_risk_requirements: Vec::new(),
+            foundation_model_requirements: Vec::new(),
+            governance_structures: Vec::new(),
+        })
+    }
     fn create_us_ai_executive_order(&self) -> AionResult<AIGovernanceFramework> { todo!() }
     fn create_uk_ai_framework(&self) -> AionResult<AIGovernanceFramework> { todo!() }
     fn create_china_ai_regulation(&self) -> AionResult<AIGovernanceFramework> { todo!() }
@@ -1031,244 +2233,33 @@ impl ComprehensiveLegalLibrary {
 
 // Implementation for individual regulation types
 impl BankingRegulations {
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> AionResult<Self> {
+        let library = ComprehensiveLegalLibrary::new()?;
+        let mut national_banking_laws = HashMap::new();
+        national_banking_laws.insert("United States".to_string(), library.create_us_banking_law()?);
+        national_banking_laws.insert("European Union".to_string(), library.create_eu_banking_law()?);
+
+        Ok(Self {
             basel_framework: BaselFramework {
-                basel_i: AtomicLegalRule {
-                    id: Uuid::new_v4(),
-                    rule_code: "PLACEHOLDER".to_string(),
-                    hierarchy_path: Vec::new(),
-                    rule_text: String::new(),
-                    plain_language: String::new(),
-                    scope: RuleScope {
-                        geographic_scope: Vec::new(),
-                        temporal_scope: TemporalScope {
-                            effective_date: Utc::now(),
-                            expiration_date: None,
-                            transitional_periods: Vec::new(),
-                            grandfathering_provisions: Vec::new(),
-                        },
-                        entity_scope: Vec::new(),
-                        activity_scope: Vec::new(),
-                        data_scope: Vec::new(),
-                        transaction_scope: Vec::new(),
-                    },
-                    applicability_conditions: Vec::new(),
-                    exceptions: Vec::new(),
-                    interpretations: Vec::new(),
-                    enforcement_mechanism: crate::granular_legal_database::CodeEnforcementMechanism {
-                        enforcement_body: String::new(),
-                        investigation_process: crate::granular_legal_database::InvestigationProcess {
-                            initiation_triggers: Vec::new(),
-                            investigation_steps: Vec::new(),
-                            evidence_requirements: Vec::new(),
-                            timelines: HashMap::new(),
-                            rights_of_accused: Vec::new(),
-                        },
-                        appeal_process: crate::granular_legal_database::AppealProcess {
-                            appeal_grounds: Vec::new(),
-                            appeal_timeline: std::time::Duration::from_secs(0),
-                            appeal_authority: String::new(),
-                            process_steps: Vec::new(),
-                            final_authority: String::new(),
-                        },
-                        sanctions: Vec::new(),
-                    },
-                    penalties: Vec::new(),
-                    related_rules: Vec::new(),
-                    precedents: Vec::new(),
-                    guidance_documents: Vec::new(),
-                    metadata: RuleMetadata {
-                        creation_date: Utc::now(),
-                        last_updated: Utc::now(),
-                        version: String::new(),
-                        sources: Vec::new(),
-                        tags: Vec::new(),
-                        complexity_score: 0.0,
-                        usage_frequency: 0.0,
-                        consultation_required: false,
-                    },
-                },
-                basel_ii: AtomicLegalRule {
-                    id: Uuid::new_v4(),
-                    rule_code: "PLACEHOLDER".to_string(),
-                    hierarchy_path: Vec::new(),
-                    rule_text: String::new(),
-                    plain_language: String::new(),
-                    scope: RuleScope {
-                        geographic_scope: Vec::new(),
-                        temporal_scope: TemporalScope {
-                            effective_date: Utc::now(),
-                            expiration_date: None,
-                            transitional_periods: Vec::new(),
-                            grandfathering_provisions: Vec::new(),
-                        },
-                        entity_scope: Vec::new(),
-                        activity_scope: Vec::new(),
-                        data_scope: Vec::new(),
-                        transaction_scope: Vec::new(),
-                    },
-                    applicability_conditions: Vec::new(),
-                    exceptions: Vec::new(),
-                    interpretations: Vec::new(),
-                    enforcement_mechanism: crate::granular_legal_database::CodeEnforcementMechanism {
-                        enforcement_body: String::new(),
-                        investigation_process: crate::granular_legal_database::InvestigationProcess {
-                            initiation_triggers: Vec::new(),
-                            investigation_steps: Vec::new(),
-                            evidence_requirements: Vec::new(),
-                            timelines: HashMap::new(),
-                            rights_of_accused: Vec::new(),
-                        },
-                        appeal_process: crate::granular_legal_database::AppealProcess {
-                            appeal_grounds: Vec::new(),
-                            appeal_timeline: std::time::Duration::from_secs(0),
-                            appeal_authority: String::new(),
-                            process_steps: Vec::new(),
-                            final_authority: String::new(),
-                        },
-                        sanctions: Vec::new(),
-                    },
-                    penalties: Vec::new(),
-                    related_rules: Vec::new(),
-                    precedents: Vec::new(),
-                    guidance_documents: Vec::new(),
-                    metadata: RuleMetadata {
-                        creation_date: Utc::now(),
-                        last_updated: Utc::now(),
-                        version: String::new(),
-                        sources: Vec::new(),
-                        tags: Vec::new(),
-                        complexity_score: 0.0,
-                        usage_frequency: 0.0,
-                        consultation_required: false,
-                    },
-                },
-                basel_iii: AtomicLegalRule {
-                    id: Uuid::new_v4(),
-                    rule_code: "PLACEHOLDER".to_string(),
-                    hierarchy_path: Vec::new(),
-                    rule_text: String::new(),
-                    plain_language: String::new(),
-                    scope: RuleScope {
-                        geographic_scope: Vec::new(),
-                        temporal_scope: TemporalScope {
-                            effective_date: Utc::now(),
-                            expiration_date: None,
-                            transitional_periods: Vec::new(),
-                            grandfathering_provisions: Vec::new(),
-                        },
-                        entity_scope: Vec::new(),
-                        activity_scope: Vec::new(),
-                        data_scope: Vec::new(),
-                        transaction_scope: Vec::new(),
-                    },
-                    applicability_conditions: Vec::new(),
-                    exceptions: Vec::new(),
-                    interpretations: Vec::new(),
-                    enforcement_mechanism: crate::granular_legal_database::CodeEnforcementMechanism {
-                        enforcement_body: String::new(),
-                        investigation_process: crate::granular_legal_database::InvestigationProcess {
-                            initiation_triggers: Vec::new(),
-                            investigation_steps: Vec::new(),
-                            evidence_requirements: Vec::new(),
-                            timelines: HashMap::new(),
-                            rights_of_accused: Vec::new(),
-                        },
-                        appeal_process: crate::granular_legal_database::AppealProcess {
-                            appeal_grounds: Vec::new(),
-                            appeal_timeline: std::time::Duration::from_secs(0),
-                            appeal_authority: String::new(),
-                            process_steps: Vec::new(),
-                            final_authority: String::new(),
-                        },
-                        sanctions: Vec::new(),
-                    },
-                    penalties: Vec::new(),
-                    related_rules: Vec::new(),
-                    precedents: Vec::new(),
-                    guidance_documents: Vec::new(),
-                    metadata: RuleMetadata {
-                        creation_date: Utc::now(),
-                        last_updated: Utc::now(),
-                        version: String::new(),
-                        sources: Vec::new(),
-                        tags: Vec::new(),
-                        complexity_score: 0.0,
-                        usage_frequency: 0.0,
-                        consultation_required: false,
-                    },
-                },
-                basel_iv: AtomicLegalRule {
-                    id: Uuid::new_v4(),
-                    rule_code: "PLACEHOLDER".to_string(),
-                    hierarchy_path: Vec::new(),
-                    rule_text: String::new(),
-                    plain_language: String::new(),
-                    scope: RuleScope {
-                        geographic_scope: Vec::new(),
-                        temporal_scope: TemporalScope {
-                            effective_date: Utc::now(),
-                            expiration_date: None,
-                            transitional_periods: Vec::new(),
-                            grandfathering_provisions: Vec::new(),
-                        },
-                        entity_scope: Vec::new(),
-                        activity_scope: Vec::new(),
-                        data_scope: Vec::new(),
-                        transaction_scope: Vec::new(),
-                    },
-                    applicability_conditions: Vec::new(),
-                    exceptions: Vec::new(),
-                    interpretations: Vec::new(),
-                    enforcement_mechanism: crate::granular_legal_database::CodeEnforcementMechanism {
-                        enforcement_body: String::new(),
-                        investigation_process: crate::granular_legal_database::InvestigationProcess {
-                            initiation_triggers: Vec::new(),
-                            investigation_steps: Vec::new(),
-                            evidence_requirements: Vec::new(),
-                            timelines: HashMap::new(),
-                            rights_of_accused: Vec::new(),
-                        },
-                        appeal_process: crate::granular_legal_database::AppealProcess {
-                            appeal_grounds: Vec::new(),
-                            appeal_timeline: std::time::Duration::from_secs(0),
-                            appeal_authority: String::new(),
-                            process_steps: Vec::new(),
-                            final_authority: String::new(),
-                        },
-                        sanctions: Vec::new(),
-                    },
-                    penalties: Vec::new(),
-                    related_rules: Vec::new(),
-                    precedents: Vec::new(),
-                    guidance_documents: Vec::new(),
-                    metadata: RuleMetadata {
-                        creation_date: Utc::now(),
-                        last_updated: Utc::now(),
-                        version: String::new(),
-                        sources: Vec::new(),
-                        tags: Vec::new(),
-                        complexity_score: 0.0,
-                        usage_frequency: 0.0,
-                        consultation_required: false,
-                    },
-                },
-                capital_adequacy_ratio: Vec::new(),
-                liquidity_coverage_ratio: Vec::new(),
-                net_stable_funding_ratio: Vec::new(),
-                leverage_ratio: Vec::new(),
-                stress_testing: Vec::new(),
-                operational_risk: Vec::new(),
-                market_risk: Vec::new(),
-                credit_risk: Vec::new(),
+                basel_i: library.create_basel_i_rule()?,
+                basel_ii: library.create_basel_ii_rule()?,
+                basel_iii: library.create_basel_iii_rule()?,
+                basel_iv: library.create_basel_iv_rule()?,
+                capital_adequacy_ratio: library.create_car_rules()?,
+                liquidity_coverage_ratio: library.create_lcr_rules()?,
+                net_stable_funding_ratio: library.create_nsfr_rules()?,
+                leverage_ratio: library.create_leverage_ratio_rules()?,
+                stress_testing: library.create_stress_testing_rules()?,
+                operational_risk: library.create_operational_risk_rules()?,
+                market_risk: library.create_market_risk_rules()?,
+                credit_risk: library.create_credit_risk_rules()?,
             },
-            national_banking_laws: HashMap::new(),
+            national_banking_laws,
             central_bank_regulations: HashMap::new(),
             deposit_insurance: HashMap::new(),
             anti_money_laundering: HashMap::new(),
             know_your_customer: HashMap::new(),
-        }
+        })
     }
 }
 

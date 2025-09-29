@@ -19,6 +19,7 @@ pub mod labor_employment_library;
 pub mod international_trade_customs_library;
 pub mod intellectual_property_library;
 pub mod connectors;
+pub mod dynamic_rules_engine;
 
 pub use engine::*;
 pub use assessor::*;
@@ -41,3 +42,4 @@ pub use labor_employment_library::*;
 pub use international_trade_customs_library::*;
 pub use intellectual_property_library::*;
 pub use connectors::*;
+pub use dynamic_rules_engine::*;
