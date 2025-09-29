@@ -11,6 +11,9 @@ use linfa_clustering::KMeans;
 use rayon::prelude::*;
 use uuid::Uuid;
 use chrono::Utc;
+use rand;
+use regex::Regex;
+use itertools::Itertools;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConflictMLEngine {
@@ -658,23 +661,438 @@ pub struct ResolutionOptimization {
 // Implementation stubs for complex components
 impl FeatureExtractor {
     fn new() -> Self {
+        let mut semantic_weights = HashMap::new();
+        semantic_weights.insert("semantic_similarity".to_string(), 1.0);
+        semantic_weights.insert("context_overlap".to_string(), 0.8);
+        semantic_weights.insert("entity_similarity".to_string(), 0.9);
+        semantic_weights.insert("intent_alignment".to_string(), 0.7);
+
+        let mut temporal_weights = HashMap::new();
+        temporal_weights.insert("effective_date_overlap".to_string(), 1.0);
+        temporal_weights.insert("expiration_conflict".to_string(), 0.9);
+        temporal_weights.insert("temporal_precedence".to_string(), 0.8);
+
+        let mut jurisdictional_weights = HashMap::new();
+        jurisdictional_weights.insert("jurisdiction_overlap".to_string(), 1.0);
+        jurisdictional_weights.insert("authority_hierarchy".to_string(), 0.9);
+        jurisdictional_weights.insert("cross_border_complexity".to_string(), 0.7);
+
+        let lexical_patterns = vec![
+            LexicalPattern {
+                pattern: r"\b(shall|must|required)\b".to_string(),
+                conflict_indicator: 0.9,
+                pattern_type: PatternType::Authority,
+                jurisdictional_specificity: 0.8,
+            },
+            LexicalPattern {
+                pattern: r"\b(prohibited|forbidden|not permitted)\b".to_string(),
+                conflict_indicator: 0.95,
+                pattern_type: PatternType::Contradiction,
+                jurisdictional_specificity: 0.9,
+            },
+            LexicalPattern {
+                pattern: r"\b(unless|except|provided that)\b".to_string(),
+                conflict_indicator: 0.7,
+                pattern_type: PatternType::Scope,
+                jurisdictional_specificity: 0.6,
+            },
+            LexicalPattern {
+                pattern: r"\b(effective|expires?|supersedes?)\b".to_string(),
+                conflict_indicator: 0.8,
+                pattern_type: PatternType::Temporal,
+                jurisdictional_specificity: 0.7,
+            },
+        ];
+
         Self {
-            semantic_weights: HashMap::new(),
-            temporal_weights: HashMap::new(),
-            jurisdictional_weights: HashMap::new(),
-            lexical_patterns: Vec::new(),
+            semantic_weights,
+            temporal_weights,
+            jurisdictional_weights,
+            lexical_patterns,
         }
     }
 
-    fn extract_conflict_features(&self, _f1: &NormativeFramework, _f2: &NormativeFramework, _sa1: &SemanticAnalysis, _sa2: &SemanticAnalysis) -> AionResult<Vec<f64>> {
-        Ok(vec![0.5; 20]) // Placeholder feature vector
+    fn extract_conflict_features(&self, f1: &NormativeFramework, f2: &NormativeFramework, sa1: &SemanticAnalysis, sa2: &SemanticAnalysis) -> AionResult<Vec<f64>> {
+        let mut features = Vec::new();
+
+        // Semantic features (indices 0-7)
+        features.extend(self.extract_semantic_features(f1, f2, sa1, sa2)?);
+
+        // Temporal features (indices 8-11)
+        features.extend(self.extract_temporal_features(f1, f2)?);
+
+        // Jurisdictional features (indices 12-15)
+        features.extend(self.extract_jurisdictional_features(f1, f2)?);
+
+        // Lexical pattern features (indices 16-19)
+        features.extend(self.extract_lexical_features(f1, f2)?);
+
+        // Ensure we have exactly 20 features
+        while features.len() < 20 {
+            features.push(0.0);
+        }
+        features.truncate(20);
+
+        Ok(features)
     }
 
-    fn update_weights(&mut self, _case: &ConflictCase) -> AionResult<()> {
+    fn extract_semantic_features(&self, f1: &NormativeFramework, f2: &NormativeFramework, sa1: &SemanticAnalysis, sa2: &SemanticAnalysis) -> AionResult<Vec<f64>> {
+        let mut features = Vec::new();
+
+        // Feature 0: Semantic similarity based on content overlap
+        let content_similarity = self.calculate_content_similarity(&f1.title, &f2.title)?;
+        features.push(content_similarity);
+
+        // Feature 1: Context overlap using semantic analysis
+        let context_overlap = self.calculate_context_overlap(sa1, sa2)?;
+        features.push(context_overlap);
+
+        // Feature 2: Entity similarity (simplified)
+        let entity_similarity = self.calculate_entity_similarity(f1, f2)?;
+        features.push(entity_similarity);
+
+        // Feature 3: Scope intersection
+        let scope_intersection = self.calculate_scope_intersection(f1, f2)?;
+        features.push(scope_intersection);
+
+        // Feature 4: Authority level difference
+        let authority_diff = self.calculate_authority_difference(f1, f2)?;
+        features.push(authority_diff);
+
+        // Feature 5: Domain specificity overlap
+        let domain_overlap = self.calculate_domain_overlap(f1, f2)?;
+        features.push(domain_overlap);
+
+        // Feature 6: Regulatory complexity measure
+        let complexity = self.calculate_complexity_measure(f1, f2)?;
+        features.push(complexity);
+
+        // Feature 7: Intent alignment score
+        let intent_alignment = self.calculate_intent_alignment(sa1, sa2)?;
+        features.push(intent_alignment);
+
+        Ok(features)
+    }
+
+    fn extract_temporal_features(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<Vec<f64>> {
+        let mut features = Vec::new();
+
+        // Feature 8: Effective date overlap
+        let date_overlap = self.calculate_effective_date_overlap(f1, f2)?;
+        features.push(date_overlap);
+
+        // Feature 9: Temporal precedence conflict
+        let precedence_conflict = self.calculate_precedence_conflict(f1, f2)?;
+        features.push(precedence_conflict);
+
+        // Feature 10: Update frequency similarity
+        let update_frequency = self.calculate_update_frequency_similarity(f1, f2)?;
+        features.push(update_frequency);
+
+        // Feature 11: Temporal stability measure
+        let stability = self.calculate_temporal_stability(f1, f2)?;
+        features.push(stability);
+
+        Ok(features)
+    }
+
+    fn extract_jurisdictional_features(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<Vec<f64>> {
+        let mut features = Vec::new();
+
+        // Feature 12: Jurisdiction overlap
+        let jurisdiction_overlap = self.calculate_jurisdiction_overlap(f1, f2)?;
+        features.push(jurisdiction_overlap);
+
+        // Feature 13: Authority hierarchy conflict
+        let hierarchy_conflict = self.calculate_authority_hierarchy_conflict(f1, f2)?;
+        features.push(hierarchy_conflict);
+
+        // Feature 14: Cross-border complexity
+        let cross_border = self.calculate_cross_border_complexity(f1, f2)?;
+        features.push(cross_border);
+
+        // Feature 15: Regulatory body alignment
+        let regulatory_alignment = self.calculate_regulatory_body_alignment(f1, f2)?;
+        features.push(regulatory_alignment);
+
+        Ok(features)
+    }
+
+    fn extract_lexical_features(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<Vec<f64>> {
+        let mut features = Vec::new();
+
+        let text1 = format!("{} {}", f1.title, f1.description.as_deref().unwrap_or(""));
+        let text2 = format!("{} {}", f2.title, f2.description.as_deref().unwrap_or(""));
+
+        // Feature 16: Authority pattern strength
+        let authority_strength = self.calculate_pattern_strength(&text1, &text2, PatternType::Authority)?;
+        features.push(authority_strength);
+
+        // Feature 17: Contradiction pattern strength
+        let contradiction_strength = self.calculate_pattern_strength(&text1, &text2, PatternType::Contradiction)?;
+        features.push(contradiction_strength);
+
+        // Feature 18: Temporal pattern strength
+        let temporal_strength = self.calculate_pattern_strength(&text1, &text2, PatternType::Temporal)?;
+        features.push(temporal_strength);
+
+        // Feature 19: Scope pattern strength
+        let scope_strength = self.calculate_pattern_strength(&text1, &text2, PatternType::Scope)?;
+        features.push(scope_strength);
+
+        Ok(features)
+    }
+
+    // Helper methods for feature calculation
+    fn calculate_content_similarity(&self, title1: &str, title2: &str) -> AionResult<f64> {
+        let words1: std::collections::HashSet<&str> = title1.split_whitespace().collect();
+        let words2: std::collections::HashSet<&str> = title2.split_whitespace().collect();
+
+        let intersection = words1.intersection(&words2).count();
+        let union = words1.union(&words2).count();
+
+        if union == 0 {
+            Ok(0.0)
+        } else {
+            Ok(intersection as f64 / union as f64)
+        }
+    }
+
+    fn calculate_context_overlap(&self, sa1: &SemanticAnalysis, sa2: &SemanticAnalysis) -> AionResult<f64> {
+        // Simplified context overlap using embedding similarity
+        let similarity = sa1.semantic_embeddings.iter()
+            .zip(&sa2.semantic_embeddings)
+            .map(|(a, b)| (a - b).abs())
+            .sum::<f64>() / sa1.semantic_embeddings.len() as f64;
+
+        Ok(1.0 - similarity.min(1.0))
+    }
+
+    fn calculate_entity_similarity(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Simple entity similarity based on framework IDs and types
+        if f1.framework_type == f2.framework_type {
+            Ok(0.7)
+        } else {
+            Ok(0.3)
+        }
+    }
+
+    fn calculate_scope_intersection(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Calculate scope overlap based on domain and scope fields
+        let scope1 = f1.scope.as_deref().unwrap_or("");
+        let scope2 = f2.scope.as_deref().unwrap_or("");
+
+        if scope1.is_empty() || scope2.is_empty() {
+            return Ok(0.5);
+        }
+
+        let similarity = self.calculate_content_similarity(scope1, scope2)?;
+        Ok(similarity)
+    }
+
+    fn calculate_authority_difference(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Simple authority level calculation based on framework type
+        let authority1 = match f1.framework_type.as_str() {
+            "Law" => 1.0,
+            "Regulation" => 0.8,
+            "Guideline" => 0.6,
+            "Policy" => 0.4,
+            _ => 0.5,
+        };
+
+        let authority2 = match f2.framework_type.as_str() {
+            "Law" => 1.0,
+            "Regulation" => 0.8,
+            "Guideline" => 0.6,
+            "Policy" => 0.4,
+            _ => 0.5,
+        };
+
+        Ok((authority1 - authority2).abs())
+    }
+
+    fn calculate_domain_overlap(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Domain overlap based on tags and categories
+        if f1.domain == f2.domain {
+            Ok(1.0)
+        } else {
+            Ok(0.2)
+        }
+    }
+
+    fn calculate_complexity_measure(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Complexity based on rule count and nesting
+        let complexity1 = f1.rules.len() as f64;
+        let complexity2 = f2.rules.len() as f64;
+
+        let max_complexity = complexity1.max(complexity2);
+        if max_complexity == 0.0 {
+            Ok(0.0)
+        } else {
+            Ok((complexity1 - complexity2).abs() / max_complexity)
+        }
+    }
+
+    fn calculate_intent_alignment(&self, sa1: &SemanticAnalysis, sa2: &SemanticAnalysis) -> AionResult<f64> {
+        // Intent alignment based on key entities and concepts
+        let entities1 = &sa1.key_entities;
+        let entities2 = &sa2.key_entities;
+
+        if entities1.is_empty() && entities2.is_empty() {
+            return Ok(0.5);
+        }
+
+        let common_entities = entities1.iter()
+            .filter(|e| entities2.contains(e))
+            .count();
+
+        let total_entities = entities1.len().max(entities2.len());
+
+        if total_entities == 0 {
+            Ok(0.5)
+        } else {
+            Ok(common_entities as f64 / total_entities as f64)
+        }
+    }
+
+    // Temporal feature calculations
+    fn calculate_effective_date_overlap(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Simplified temporal overlap calculation
+        match (&f1.effective_date, &f2.effective_date) {
+            (Some(date1), Some(date2)) => {
+                let diff = (date1.timestamp() - date2.timestamp()).abs();
+                let max_diff = 365 * 24 * 3600; // 1 year in seconds
+                Ok(1.0 - (diff as f64 / max_diff as f64).min(1.0))
+            },
+            _ => Ok(0.5)
+        }
+    }
+
+    fn calculate_precedence_conflict(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Check for temporal precedence conflicts
+        match (&f1.effective_date, &f2.effective_date) {
+            (Some(date1), Some(date2)) => {
+                if date1 > date2 && f1.framework_type == "Law" && f2.framework_type == "Regulation" {
+                    Ok(0.8) // Potential precedence conflict
+                } else {
+                    Ok(0.2)
+                }
+            },
+            _ => Ok(0.5)
+        }
+    }
+
+    fn calculate_update_frequency_similarity(&self, _f1: &NormativeFramework, _f2: &NormativeFramework) -> AionResult<f64> {
+        // Placeholder for update frequency analysis
+        Ok(0.5)
+    }
+
+    fn calculate_temporal_stability(&self, _f1: &NormativeFramework, _f2: &NormativeFramework) -> AionResult<f64> {
+        // Placeholder for temporal stability analysis
+        Ok(0.5)
+    }
+
+    // Jurisdictional feature calculations
+    fn calculate_jurisdiction_overlap(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        if f1.jurisdiction == f2.jurisdiction {
+            Ok(1.0)
+        } else {
+            // Check for partial overlap (e.g., federal vs state)
+            Ok(0.3)
+        }
+    }
+
+    fn calculate_authority_hierarchy_conflict(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Simplified hierarchy conflict detection
+        if f1.jurisdiction != f2.jurisdiction {
+            match (f1.framework_type.as_str(), f2.framework_type.as_str()) {
+                ("Federal Law", "State Law") => Ok(0.8),
+                ("State Law", "Federal Law") => Ok(0.8),
+                _ => Ok(0.3)
+            }
+        } else {
+            Ok(0.1)
+        }
+    }
+
+    fn calculate_cross_border_complexity(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Check if frameworks are from different countries/jurisdictions
+        let is_cross_border = f1.jurisdiction != f2.jurisdiction &&
+            (f1.jurisdiction.contains("US") && f2.jurisdiction.contains("EU") ||
+             f1.jurisdiction.contains("EU") && f2.jurisdiction.contains("US"));
+
+        if is_cross_border {
+            Ok(0.9)
+        } else {
+            Ok(0.1)
+        }
+    }
+
+    fn calculate_regulatory_body_alignment(&self, f1: &NormativeFramework, f2: &NormativeFramework) -> AionResult<f64> {
+        // Check if frameworks come from the same regulatory body
+        if f1.issuing_authority == f2.issuing_authority {
+            Ok(1.0)
+        } else {
+            Ok(0.2)
+        }
+    }
+
+    fn calculate_pattern_strength(&self, text1: &str, text2: &str, pattern_type: PatternType) -> AionResult<f64> {
+        let relevant_patterns: Vec<_> = self.lexical_patterns.iter()
+            .filter(|p| std::mem::discriminant(&p.pattern_type) == std::mem::discriminant(&pattern_type))
+            .collect();
+
+        if relevant_patterns.is_empty() {
+            return Ok(0.0);
+        }
+
+        let mut total_strength = 0.0;
+        let combined_text = format!("{} {}", text1, text2);
+
+        for pattern in relevant_patterns {
+            if let Ok(regex) = Regex::new(&pattern.pattern) {
+                let matches = regex.find_iter(&combined_text).count();
+                total_strength += matches as f64 * pattern.conflict_indicator;
+            }
+        }
+
+        // Normalize by text length
+        let text_length = combined_text.split_whitespace().count();
+        if text_length > 0 {
+            Ok(total_strength / text_length as f64)
+        } else {
+            Ok(0.0)
+        }
+    }
+
+    fn update_weights(&mut self, case: &ConflictCase) -> AionResult<()> {
+        // Update weights based on successful/failed predictions
+        if case.human_validated && case.resolution_effectiveness > 0.8 {
+            // Increase weights for successful patterns
+            for (key, weight) in &mut self.semantic_weights {
+                *weight *= 1.01; // Small incremental increase
+            }
+        } else if case.human_validated && case.resolution_effectiveness < 0.3 {
+            // Decrease weights for failed patterns
+            for (key, weight) in &mut self.semantic_weights {
+                *weight *= 0.99; // Small incremental decrease
+            }
+        }
         Ok(())
     }
 
-    fn add_pattern_features(&mut self, _pattern: &ConflictPattern) -> AionResult<()> {
+    fn add_pattern_features(&mut self, pattern: &ConflictPattern) -> AionResult<()> {
+        // Add new lexical patterns discovered through ML
+        if pattern.effectiveness_score > 0.7 {
+            let new_pattern = LexicalPattern {
+                pattern: format!("discovered_pattern_{}", pattern.id),
+                conflict_indicator: pattern.effectiveness_score,
+                pattern_type: PatternType::Semantic,
+                jurisdictional_specificity: pattern.occurrence_frequency,
+            };
+
+            self.lexical_patterns.push(new_pattern);
+        }
         Ok(())
     }
 }
@@ -688,46 +1106,666 @@ impl ConflictClassifier {
         }
     }
 
-    fn predict_conflict_type(&self, _features: &[f64]) -> AionResult<ConflictType> {
-        Ok(ConflictType::ImplicitConflict) // Placeholder
+    fn predict_conflict_type(&self, features: &[f64]) -> AionResult<ConflictType> {
+        if self.decision_trees.is_empty() {
+            return Ok(ConflictType::ImplicitConflict);
+        }
+
+        let mut predictions = Vec::new();
+
+        // Get prediction from each decision tree
+        for (tree, weight) in self.decision_trees.iter().zip(&self.ensemble_weights) {
+            let prediction = self.predict_with_tree(tree, features)?;
+            predictions.push((prediction, *weight));
+        }
+
+        // Weighted voting
+        let mut vote_counts: HashMap<ConflictType, f64> = HashMap::new();
+        for (prediction, weight) in predictions {
+            *vote_counts.entry(prediction).or_insert(0.0) += weight;
+        }
+
+        vote_counts
+            .into_iter()
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+            .map(|(conflict_type, _)| conflict_type)
+            .ok_or_else(|| AionError::PredictionError {
+                model: "ConflictClassifier".to_string(),
+                reason: "No valid prediction found".to_string(),
+            })
     }
 
-    fn train(&mut self, _features: &[Vec<f64>], _labels: &[ConflictType]) -> AionResult<()> {
+    fn predict_with_tree(&self, tree: &DecisionTree, features: &[f64]) -> AionResult<ConflictType> {
+        let mut current_node_index = 0;
+
+        while current_node_index < tree.nodes.len() {
+            let node = &tree.nodes[current_node_index];
+
+            // If this is a leaf node, return the prediction
+            if let Some(prediction) = &node.prediction {
+                return Ok(prediction.clone());
+            }
+
+            // Navigate to next node based on feature value
+            if node.feature_index < features.len() {
+                let feature_value = features[node.feature_index];
+
+                if feature_value <= node.threshold {
+                    if let Some(left_child) = node.left_child {
+                        current_node_index = left_child;
+                    } else {
+                        // No left child, treat as leaf
+                        return Ok(ConflictType::ImplicitConflict);
+                    }
+                } else {
+                    if let Some(right_child) = node.right_child {
+                        current_node_index = right_child;
+                    } else {
+                        // No right child, treat as leaf
+                        return Ok(ConflictType::ImplicitConflict);
+                    }
+                }
+            } else {
+                // Invalid feature index, return default
+                return Ok(ConflictType::ImplicitConflict);
+            }
+        }
+
+        Ok(ConflictType::ImplicitConflict)
+    }
+
+    fn train(&mut self, features: &[Vec<f64>], labels: &[ConflictType]) -> AionResult<()> {
+        if features.len() != labels.len() {
+            return Err(AionError::TrainingError {
+                model: "ConflictClassifier".to_string(),
+                reason: "Feature and label count mismatch".to_string(),
+            });
+        }
+
+        if features.is_empty() {
+            return Ok(());
+        }
+
+        // Build multiple decision trees for ensemble
+        self.decision_trees.clear();
+        self.ensemble_weights.clear();
+
+        let num_trees = 5;
+        let sample_ratio = 0.8;
+
+        for tree_idx in 0..num_trees {
+            // Bootstrap sampling
+            let sample_size = (features.len() as f64 * sample_ratio) as usize;
+            let mut sampled_features = Vec::new();
+            let mut sampled_labels = Vec::new();
+
+            for _ in 0..sample_size {
+                let idx = (rand::random::<f64>() * features.len() as f64) as usize % features.len();
+                sampled_features.push(features[idx].clone());
+                sampled_labels.push(labels[idx].clone());
+            }
+
+            // Build decision tree
+            let tree = self.build_decision_tree(&sampled_features, &sampled_labels)?;
+            let accuracy = self.evaluate_tree_accuracy(&tree, features, labels)?;
+
+            self.decision_trees.push(tree);
+            self.ensemble_weights.push(accuracy);
+        }
+
+        // Normalize ensemble weights
+        let weight_sum: f64 = self.ensemble_weights.iter().sum();
+        if weight_sum > 0.0 {
+            for weight in &mut self.ensemble_weights {
+                *weight /= weight_sum;
+            }
+        }
+
         Ok(())
     }
 
     fn add_pattern_rule(&mut self, _pattern: &ConflictPattern) -> AionResult<()> {
         Ok(())
     }
+
+    fn build_decision_tree(&self, features: &[Vec<f64>], labels: &[ConflictType]) -> AionResult<DecisionTree> {
+        if features.is_empty() || labels.is_empty() {
+            return Err(AionError::TrainingError {
+                model: "DecisionTree".to_string(),
+                reason: "No training data provided".to_string(),
+            });
+        }
+
+        let mut nodes = Vec::new();
+        let root_node = self.build_tree_recursive(features, labels, 0, 10)?; // max_depth = 10
+        nodes.push(root_node);
+
+        // Calculate tree accuracy (simplified)
+        let accuracy = self.calculate_tree_accuracy_simple(features, labels);
+
+        Ok(DecisionTree {
+            nodes,
+            accuracy,
+            specialization: ConflictType::ImplicitConflict, // Default specialization
+        })
+    }
+
+    fn build_tree_recursive(&self, features: &[Vec<f64>], labels: &[ConflictType], depth: usize, max_depth: usize) -> AionResult<TreeNode> {
+        // Base cases
+        if depth >= max_depth || features.len() < 5 {
+            return Ok(TreeNode {
+                feature_index: 0,
+                threshold: 0.0,
+                left_child: None,
+                right_child: None,
+                prediction: Some(self.most_common_label(labels)),
+                confidence: self.calculate_label_purity(labels),
+            });
+        }
+
+        // Check if all labels are the same
+        if self.all_labels_same(labels) {
+            return Ok(TreeNode {
+                feature_index: 0,
+                threshold: 0.0,
+                left_child: None,
+                right_child: None,
+                prediction: Some(labels[0].clone()),
+                confidence: 1.0,
+            });
+        }
+
+        // Find best split
+        let (best_feature, best_threshold, best_score) = self.find_best_split(features, labels)?;
+
+        if best_score < 0.01 { // Minimum improvement threshold
+            return Ok(TreeNode {
+                feature_index: best_feature,
+                threshold: best_threshold,
+                left_child: None,
+                right_child: None,
+                prediction: Some(self.most_common_label(labels)),
+                confidence: self.calculate_label_purity(labels),
+            });
+        }
+
+        // Split data
+        let (left_features, left_labels, right_features, right_labels) =
+            self.split_data(features, labels, best_feature, best_threshold);
+
+        // Recursively build subtrees
+        let left_child = if !left_features.is_empty() {
+            Some(self.build_tree_recursive(&left_features, &left_labels, depth + 1, max_depth)?)
+        } else {
+            None
+        };
+
+        let right_child = if !right_features.is_empty() {
+            Some(self.build_tree_recursive(&right_features, &right_labels, depth + 1, max_depth)?)
+        } else {
+            None
+        };
+
+        Ok(TreeNode {
+            feature_index: best_feature,
+            threshold: best_threshold,
+            left_child: left_child.map(|_| 1), // Simplified indexing
+            right_child: right_child.map(|_| 2), // Simplified indexing
+            prediction: None,
+            confidence: best_score,
+        })
+    }
+
+    fn find_best_split(&self, features: &[Vec<f64>], labels: &[ConflictType]) -> AionResult<(usize, f64, f64)> {
+        if features.is_empty() || features[0].is_empty() {
+            return Ok((0, 0.0, 0.0));
+        }
+
+        let num_features = features[0].len();
+        let mut best_feature = 0;
+        let mut best_threshold = 0.0;
+        let mut best_score = 0.0;
+
+        for feature_idx in 0..num_features {
+            // Get all values for this feature
+            let mut feature_values: Vec<f64> = features.iter()
+                .map(|f| f[feature_idx])
+                .collect();
+            feature_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+            feature_values.dedup();
+
+            // Try different thresholds
+            for i in 0..feature_values.len().saturating_sub(1) {
+                let threshold = (feature_values[i] + feature_values[i + 1]) / 2.0;
+                let score = self.calculate_information_gain(features, labels, feature_idx, threshold);
+
+                if score > best_score {
+                    best_score = score;
+                    best_feature = feature_idx;
+                    best_threshold = threshold;
+                }
+            }
+        }
+
+        Ok((best_feature, best_threshold, best_score))
+    }
+
+    fn calculate_information_gain(&self, features: &[Vec<f64>], labels: &[ConflictType], feature_idx: usize, threshold: f64) -> f64 {
+        let total_entropy = self.calculate_entropy(labels);
+
+        let (left_labels, right_labels) = self.split_labels(features, labels, feature_idx, threshold);
+
+        let left_weight = left_labels.len() as f64 / labels.len() as f64;
+        let right_weight = right_labels.len() as f64 / labels.len() as f64;
+
+        let left_entropy = self.calculate_entropy(&left_labels);
+        let right_entropy = self.calculate_entropy(&right_labels);
+
+        total_entropy - (left_weight * left_entropy + right_weight * right_entropy)
+    }
+
+    fn calculate_entropy(&self, labels: &[ConflictType]) -> f64 {
+        if labels.is_empty() {
+            return 0.0;
+        }
+
+        let mut counts = HashMap::new();
+        for label in labels {
+            *counts.entry(label.clone()).or_insert(0) += 1;
+        }
+
+        let total = labels.len() as f64;
+        let mut entropy = 0.0;
+
+        for count in counts.values() {
+            let p = *count as f64 / total;
+            if p > 0.0 {
+                entropy -= p * p.log2();
+            }
+        }
+
+        entropy
+    }
+
+    fn split_labels(&self, features: &[Vec<f64>], labels: &[ConflictType], feature_idx: usize, threshold: f64) -> (Vec<ConflictType>, Vec<ConflictType>) {
+        let mut left_labels = Vec::new();
+        let mut right_labels = Vec::new();
+
+        for (feature_vec, label) in features.iter().zip(labels) {
+            if feature_idx < feature_vec.len() {
+                if feature_vec[feature_idx] <= threshold {
+                    left_labels.push(label.clone());
+                } else {
+                    right_labels.push(label.clone());
+                }
+            }
+        }
+
+        (left_labels, right_labels)
+    }
+
+    fn split_data(&self, features: &[Vec<f64>], labels: &[ConflictType], feature_idx: usize, threshold: f64) -> (Vec<Vec<f64>>, Vec<ConflictType>, Vec<Vec<f64>>, Vec<ConflictType>) {
+        let mut left_features = Vec::new();
+        let mut left_labels = Vec::new();
+        let mut right_features = Vec::new();
+        let mut right_labels = Vec::new();
+
+        for (feature_vec, label) in features.iter().zip(labels) {
+            if feature_idx < feature_vec.len() {
+                if feature_vec[feature_idx] <= threshold {
+                    left_features.push(feature_vec.clone());
+                    left_labels.push(label.clone());
+                } else {
+                    right_features.push(feature_vec.clone());
+                    right_labels.push(label.clone());
+                }
+            }
+        }
+
+        (left_features, left_labels, right_features, right_labels)
+    }
+
+    fn most_common_label(&self, labels: &[ConflictType]) -> ConflictType {
+        if labels.is_empty() {
+            return ConflictType::ImplicitConflict;
+        }
+
+        let mut counts = HashMap::new();
+        for label in labels {
+            *counts.entry(label.clone()).or_insert(0) += 1;
+        }
+
+        counts.into_iter()
+            .max_by_key(|(_, count)| *count)
+            .map(|(label, _)| label)
+            .unwrap_or(ConflictType::ImplicitConflict)
+    }
+
+    fn calculate_label_purity(&self, labels: &[ConflictType]) -> f64 {
+        if labels.is_empty() {
+            return 0.0;
+        }
+
+        let most_common = self.most_common_label(labels);
+        let count = labels.iter().filter(|&l| *l == most_common).count();
+        count as f64 / labels.len() as f64
+    }
+
+    fn all_labels_same(&self, labels: &[ConflictType]) -> bool {
+        labels.windows(2).all(|w| w[0] == w[1])
+    }
+
+    fn calculate_tree_accuracy_simple(&self, features: &[Vec<f64>], labels: &[ConflictType]) -> f64 {
+        if features.is_empty() {
+            return 0.0;
+        }
+
+        // Simplified accuracy calculation
+        let correct_predictions = features.len() / 2; // Placeholder logic
+        correct_predictions as f64 / features.len() as f64
+    }
+
+    fn evaluate_tree_accuracy(&self, tree: &DecisionTree, features: &[Vec<f64>], labels: &[ConflictType]) -> AionResult<f64> {
+        if features.is_empty() || labels.is_empty() {
+            return Ok(0.0);
+        }
+
+        let mut correct = 0;
+        for (feature_vec, actual_label) in features.iter().zip(labels) {
+            let predicted = self.predict_with_tree(tree, feature_vec)?;
+            if predicted == *actual_label {
+                correct += 1;
+            }
+        }
+
+        Ok(correct as f64 / features.len() as f64)
+    }
 }
 
 impl SeverityPredictor {
     fn new() -> Self {
+        let mut severity_mapping = HashMap::new();
+        severity_mapping.insert(ConflictType::DirectContradiction, 0.9);
+        severity_mapping.insert(ConflictType::JurisdictionalOverlap, 0.7);
+        severity_mapping.insert(ConflictType::TemporalInconsistency, 0.5);
+        severity_mapping.insert(ConflictType::AuthorityConflict, 0.8);
+        severity_mapping.insert(ConflictType::RequirementConflict, 0.6);
+        severity_mapping.insert(ConflictType::ImplicitConflict, 0.4);
+
+        let mut contextual_modifiers = HashMap::new();
+        contextual_modifiers.insert("financial_sector".to_string(), 0.2);
+        contextual_modifiers.insert("healthcare".to_string(), 0.3);
+        contextual_modifiers.insert("cross_border".to_string(), 0.25);
+        contextual_modifiers.insert("real_time_systems".to_string(), 0.35);
+
         Self {
-            neural_network: SimpleNeuralNetwork::new(),
-            severity_mapping: HashMap::new(),
-            contextual_modifiers: HashMap::new(),
+            neural_network: SimpleNeuralNetwork::new(20, 10, 1),
+            severity_mapping,
+            contextual_modifiers,
         }
     }
 
-    fn predict_severity(&self, _features: &[f64], _conflict_type: &ConflictType) -> AionResult<ConflictSeverity> {
-        Ok(ConflictSeverity::Medium) // Placeholder
+    fn predict_severity(&self, features: &[f64], conflict_type: &ConflictType) -> AionResult<ConflictSeverity> {
+        if features.is_empty() {
+            return Ok(ConflictSeverity::Low);
+        }
+
+        // Neural network forward pass
+        let features_array = Array1::from_vec(features.to_vec());
+        let output = self.neural_network.forward_pass(&features_array)?;
+        let base_severity = output[0];
+
+        // Adjust based on conflict type using learned mapping
+        let type_adjustment = self.severity_mapping.get(conflict_type).unwrap_or(&0.5);
+        let adjusted_severity = (base_severity + type_adjustment) / 2.0;
+
+        // Apply contextual modifiers based on feature analysis
+        let contextual_adjustment = self.calculate_contextual_adjustment(features);
+        let final_severity = (adjusted_severity + contextual_adjustment).clamp(0.0, 1.0);
+
+        // Map to discrete severity levels with improved thresholds
+        if final_severity >= 0.85 {
+            Ok(ConflictSeverity::Critical)
+        } else if final_severity >= 0.65 {
+            Ok(ConflictSeverity::High)
+        } else if final_severity >= 0.45 {
+            Ok(ConflictSeverity::Medium)
+        } else if final_severity >= 0.25 {
+            Ok(ConflictSeverity::Low)
+        } else {
+            Ok(ConflictSeverity::Informational)
+        }
     }
 
-    fn train(&mut self, _features: &[Vec<f64>], _severity_labels: &[f64]) -> AionResult<()> {
+    fn train(&mut self, features: &[Vec<f64>], severity_labels: &[f64]) -> AionResult<()> {
+        if features.len() != severity_labels.len() {
+            return Err(AionError::TrainingError {
+                model: "SeverityPredictor".to_string(),
+                reason: "Features and labels length mismatch".to_string(),
+            });
+        }
+
+        if features.is_empty() {
+            return Ok(());
+        }
+
+        // Prepare training data
+        let input_matrix = Array2::from_shape_vec(
+            (features.len(), features[0].len()),
+            features.iter().flatten().copied().collect(),
+        ).map_err(|e| AionError::TrainingError {
+            model: "SeverityPredictor".to_string(),
+            reason: format!("Failed to create input matrix: {}", e),
+        })?;
+
+        let target_matrix = Array2::from_shape_vec(
+            (severity_labels.len(), 1),
+            severity_labels.to_vec(),
+        ).map_err(|e| AionError::TrainingError {
+            model: "SeverityPredictor".to_string(),
+            reason: format!("Failed to create target matrix: {}", e),
+        })?;
+
+        // Train neural network
+        self.neural_network.train(&input_matrix, &target_matrix, 1000)?;
+
+        // Update severity mapping based on training data
+        self.update_severity_mapping(features, severity_labels)?;
+
+        Ok(())
+    }
+
+    fn calculate_contextual_adjustment(&self, features: &[f64]) -> f64 {
+        let mut adjustment = 0.0;
+
+        // Simple feature-based context detection
+        if features.len() >= 10 {
+            // High feature variance indicates complex regulatory environment
+            let variance = self.calculate_feature_variance(features);
+            if variance > 0.5 {
+                adjustment += 0.1;
+            }
+
+            // Multiple high-value features indicate multiple regulatory domains
+            let high_features = features.iter().filter(|&&f| f > 0.7).count();
+            if high_features > 3 {
+                adjustment += 0.15;
+            }
+        }
+
+        adjustment.clamp(-0.2, 0.3)
+    }
+
+    fn calculate_feature_variance(&self, features: &[f64]) -> f64 {
+        let mean = features.iter().sum::<f64>() / features.len() as f64;
+        let variance = features.iter()
+            .map(|&f| (f - mean).powi(2))
+            .sum::<f64>() / features.len() as f64;
+        variance.sqrt()
+    }
+
+    fn update_severity_mapping(&mut self, features: &[Vec<f64>], severity_labels: &[f64]) -> AionResult<()> {
+        // Update contextual modifiers based on observed patterns
+        for (feature_vec, &severity) in features.iter().zip(severity_labels) {
+            if feature_vec.len() >= 5 {
+                // Update modifiers based on feature patterns
+                let pattern_strength = feature_vec[0..5].iter().sum::<f64>() / 5.0;
+                if pattern_strength > 0.8 && severity > 0.7 {
+                    self.contextual_modifiers.insert("high_complexity".to_string(), 0.2);
+                }
+            }
+        }
         Ok(())
     }
 }
 
 impl SimpleNeuralNetwork {
-    fn new() -> Self {
+    fn new(input_size: usize, hidden_size: usize, output_size: usize) -> Self {
+        use std::f64::consts::E;
+
+        // Xavier initialization for better convergence
+        let input_bound = (6.0 / (input_size + hidden_size) as f64).sqrt();
+        let output_bound = (6.0 / (hidden_size + output_size) as f64).sqrt();
+
+        let mut rng = rand::thread_rng();
+
+        let weights_input_hidden = Array2::from_shape_fn((input_size, hidden_size), |_| {
+            (rand::random::<f64>() - 0.5) * 2.0 * input_bound
+        });
+
+        let weights_hidden_output = Array2::from_shape_fn((hidden_size, output_size), |_| {
+            (rand::random::<f64>() - 0.5) * 2.0 * output_bound
+        });
+
         Self {
-            weights_input_hidden: Array2::zeros((10, 5)),
-            weights_hidden_output: Array2::zeros((5, 1)),
-            bias_hidden: Array1::zeros(5),
-            bias_output: Array1::zeros(1),
-            learning_rate: 0.01,
+            weights_input_hidden,
+            weights_hidden_output,
+            bias_hidden: Array1::zeros(hidden_size),
+            bias_output: Array1::zeros(output_size),
+            learning_rate: 0.001,
         }
+    }
+
+    fn forward_pass(&self, input: &Array1<f64>) -> AionResult<Array1<f64>> {
+        // Input to hidden layer
+        let hidden_input = input.dot(&self.weights_input_hidden) + &self.bias_hidden;
+        let hidden_output = hidden_input.mapv(|x| self.relu(x));
+
+        // Hidden to output layer
+        let output_input = hidden_output.dot(&self.weights_hidden_output) + &self.bias_output;
+        let output = output_input.mapv(|x| self.sigmoid(x));
+
+        Ok(output)
+    }
+
+    fn train(&mut self, inputs: &Array2<f64>, targets: &Array2<f64>, epochs: usize) -> AionResult<()> {
+        if inputs.nrows() != targets.nrows() {
+            return Err(AionError::TrainingError {
+                model: "SimpleNeuralNetwork".to_string(),
+                reason: "Input and target batch sizes don't match".to_string(),
+            });
+        }
+
+        for epoch in 0..epochs {
+            let mut total_loss = 0.0;
+
+            for i in 0..inputs.nrows() {
+                let input = inputs.row(i).to_owned();
+                let target = targets.row(i).to_owned();
+
+                // Forward pass
+                let (hidden_output, final_output) = self.forward_pass_training(&input)?;
+
+                // Backward pass
+                self.backward_pass(&input, &hidden_output, &final_output, &target)?;
+
+                // Calculate loss for monitoring
+                let loss = self.calculate_loss(&final_output, &target);
+                total_loss += loss;
+            }
+
+            // Optional: Adjust learning rate over time
+            if epoch % 100 == 0 {
+                let avg_loss = total_loss / inputs.nrows() as f64;
+                if avg_loss < 0.01 {
+                    self.learning_rate *= 0.95; // Reduce learning rate as we converge
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn forward_pass_training(&self, input: &Array1<f64>) -> AionResult<(Array1<f64>, Array1<f64>)> {
+        // Input to hidden layer
+        let hidden_input = input.dot(&self.weights_input_hidden) + &self.bias_hidden;
+        let hidden_output = hidden_input.mapv(|x| self.relu(x));
+
+        // Hidden to output layer
+        let output_input = hidden_output.dot(&self.weights_hidden_output) + &self.bias_output;
+        let final_output = output_input.mapv(|x| self.sigmoid(x));
+
+        Ok((hidden_output, final_output))
+    }
+
+    fn backward_pass(&mut self, input: &Array1<f64>, hidden_output: &Array1<f64>,
+                     final_output: &Array1<f64>, target: &Array1<f64>) -> AionResult<()> {
+
+        // Output layer gradients
+        let output_error = final_output - target;
+        let output_delta = &output_error * &final_output.mapv(|x| self.sigmoid_derivative(x));
+
+        // Hidden layer gradients
+        let hidden_error = output_delta.dot(&self.weights_hidden_output.t());
+        let hidden_delta = &hidden_error * &hidden_output.mapv(|x| self.relu_derivative(x));
+
+        // Update weights and biases
+        // Output layer updates
+        for i in 0..self.weights_hidden_output.nrows() {
+            for j in 0..self.weights_hidden_output.ncols() {
+                self.weights_hidden_output[[i, j]] -= self.learning_rate * output_delta[j] * hidden_output[i];
+            }
+        }
+
+        for j in 0..self.bias_output.len() {
+            self.bias_output[j] -= self.learning_rate * output_delta[j];
+        }
+
+        // Hidden layer updates
+        for i in 0..self.weights_input_hidden.nrows() {
+            for j in 0..self.weights_input_hidden.ncols() {
+                self.weights_input_hidden[[i, j]] -= self.learning_rate * hidden_delta[j] * input[i];
+            }
+        }
+
+        for j in 0..self.bias_hidden.len() {
+            self.bias_hidden[j] -= self.learning_rate * hidden_delta[j];
+        }
+
+        Ok(())
+    }
+
+    fn relu(&self, x: f64) -> f64 {
+        x.max(0.0)
+    }
+
+    fn relu_derivative(&self, x: f64) -> f64 {
+        if x > 0.0 { 1.0 } else { 0.0 }
+    }
+
+    fn sigmoid(&self, x: f64) -> f64 {
+        1.0 / (1.0 + (-x.clamp(-500.0, 500.0)).exp())
+    }
+
+    fn sigmoid_derivative(&self, x: f64) -> f64 {
+        let s = self.sigmoid(x);
+        s * (1.0 - s)
+    }
+
+    fn calculate_loss(&self, output: &Array1<f64>, target: &Array1<f64>) -> f64 {
+        // Mean squared error
+        let diff = output - target;
+        diff.dot(&diff) / output.len() as f64
     }
 }
 

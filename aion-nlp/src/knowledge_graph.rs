@@ -695,23 +695,367 @@ impl RegulatoryKnowledgeGraph {
         Ok(())
     }
 
-    // Placeholder implementations for complex graph algorithms
-    fn analyze_conflict_path(&self, _source: NodeIndex, _target: NodeIndex) -> AionResult<ConflictPath> {
+    // Real implementations for complex graph algorithms
+    fn analyze_conflict_path(&self, source: NodeIndex, target: NodeIndex) -> AionResult<ConflictPath> {
+        let source_node = &self.graph[source];
+        let target_node = &self.graph[target];
+
+        // Find all paths between conflicting nodes
+        let paths = self.find_all_paths_between(source, target, 5)?; // max depth 5
+        let mut conflict_steps = Vec::new();
+        let mut total_severity = 0.0;
+
+        for path in &paths {
+            for window in path.windows(2) {
+                if let (Some(from), Some(to)) = (window.get(0), window.get(1)) {
+                    if let Some(edge_index) = self.graph.find_edge(*from, *to) {
+                        let edge = &self.graph[edge_index];
+
+                        // Calculate conflict contribution
+                        let step_severity = match edge.relationship_type {
+                            RelationshipType::ConflictsWith => 1.0,
+                            RelationshipType::Contradicts => 0.95,
+                            RelationshipType::Supersedes => 0.7,
+                            RelationshipType::Requires => 0.5,
+                            _ => 0.2,
+                        };
+
+                        conflict_steps.push(ConflictStep {
+                            step_id: conflict_steps.len(),
+                            relationship_type: edge.relationship_type.clone(),
+                            conflict_description: self.generate_conflict_description(from, to, &edge.relationship_type),
+                            confidence: edge.confidence * step_severity,
+                        });
+
+                        total_severity += step_severity * edge.confidence;
+                    }
+                }
+            }
+        }
+
+        let avg_severity = if conflict_steps.is_empty() {
+            0.0
+        } else {
+            total_severity / conflict_steps.len() as f64
+        };
+
+        let resolution_suggestions = self.generate_conflict_resolutions(&conflict_steps);
+
         Ok(ConflictPath {
-            source_entity: "entity1".to_string(),
-            target_entity: "entity2".to_string(),
-            conflict_steps: Vec::new(),
-            conflict_severity: 0.7,
-            resolution_suggestions: Vec::new(),
+            source_entity: source_node.entity_id.clone(),
+            target_entity: target_node.entity_id.clone(),
+            conflict_steps,
+            conflict_severity: avg_severity,
+            resolution_suggestions,
         })
     }
 
     fn detect_implicit_conflicts(&self) -> AionResult<Vec<ConflictPath>> {
-        Ok(Vec::new()) // Placeholder
+        let mut implicit_conflicts = Vec::new();
+
+        // Detect conflicts through transitivity analysis
+        for node_index in self.graph.node_indices() {
+            let neighbors: Vec<_> = self.graph.neighbors(node_index).collect();
+
+            // Check for conflicting requirements in the same framework
+            for i in 0..neighbors.len() {
+                for j in i+1..neighbors.len() {
+                    let neighbor1 = neighbors[i];
+                    let neighbor2 = neighbors[j];
+
+                    // Check if these two neighbors conflict with each other
+                    if let Some(conflict) = self.detect_requirement_conflict(neighbor1, neighbor2)? {
+                        implicit_conflicts.push(conflict);
+                    }
+                }
+            }
+
+            // Detect temporal conflicts
+            if let Some(temporal_conflict) = self.detect_temporal_conflicts(node_index)? {
+                implicit_conflicts.push(temporal_conflict);
+            }
+
+            // Detect authority hierarchy conflicts
+            if let Some(authority_conflict) = self.detect_authority_conflicts(node_index)? {
+                implicit_conflicts.push(authority_conflict);
+            }
+        }
+
+        // Remove duplicates based on entity pairs
+        implicit_conflicts.sort_by(|a, b| {
+            (a.source_entity.clone(), a.target_entity.clone())
+                .partial_cmp(&(b.source_entity.clone(), b.target_entity.clone()))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        implicit_conflicts.dedup_by(|a, b| {
+            a.source_entity == b.source_entity && a.target_entity == b.target_entity
+        });
+
+        Ok(implicit_conflicts)
     }
 
-    fn find_paths_between_nodes(&self, _source: NodeIndex, _target: NodeIndex) -> AionResult<Vec<RegulatoryPath>> {
-        Ok(Vec::new()) // Placeholder
+    fn find_paths_between_nodes(&self, source: NodeIndex, target: NodeIndex) -> AionResult<Vec<RegulatoryPath>> {
+        let paths = self.find_all_paths_between(source, target, 6)?;
+        let mut regulatory_paths = Vec::new();
+
+        for (path_idx, path) in paths.iter().enumerate() {
+            let mut relationships = Vec::new();
+            let mut path_strength = 1.0;
+            let mut regulatory_implications = Vec::new();
+
+            // Analyze each edge in the path
+            for window in path.windows(2) {
+                if let (Some(&from), Some(&to)) = (window.get(0), window.get(1)) {
+                    if let Some(edge_index) = self.graph.find_edge(from, to) {
+                        let edge = &self.graph[edge_index];
+                        relationships.push(edge.relationship_type.clone());
+                        path_strength *= edge.weight * edge.confidence;
+
+                        // Add regulatory implications
+                        regulatory_implications.extend(
+                            self.analyze_relationship_implications(&edge.relationship_type)
+                        );
+                    }
+                }
+            }
+
+            let node_ids: Vec<String> = path.iter()
+                .map(|&node_idx| self.graph[node_idx].entity_id.clone())
+                .collect();
+
+            regulatory_paths.push(RegulatoryPath {
+                path_id: format!("path_{}_{}", path_idx, uuid::Uuid::new_v4()),
+                nodes: node_ids,
+                relationships,
+                path_strength,
+                regulatory_implications,
+            });
+        }
+
+        // Sort by path strength
+        regulatory_paths.sort_by(|a, b| b.path_strength.partial_cmp(&a.path_strength).unwrap());
+
+        Ok(regulatory_paths)
+    }
+
+    // Helper methods for graph analysis
+    fn find_all_paths_between(&self, source: NodeIndex, target: NodeIndex, max_depth: usize) -> AionResult<Vec<Vec<NodeIndex>>> {
+        let mut all_paths = Vec::new();
+        let mut current_path = vec![source];
+        let mut visited = HashSet::new();
+        visited.insert(source);
+
+        self.dfs_paths(source, target, &mut current_path, &mut visited, &mut all_paths, max_depth, 0);
+
+        Ok(all_paths)
+    }
+
+    fn dfs_paths(&self, current: NodeIndex, target: NodeIndex, path: &mut Vec<NodeIndex>,
+                 visited: &mut HashSet<NodeIndex>, all_paths: &mut Vec<Vec<NodeIndex>>,
+                 max_depth: usize, current_depth: usize) {
+
+        if current_depth > max_depth {
+            return;
+        }
+
+        if current == target {
+            all_paths.push(path.clone());
+            return;
+        }
+
+        for neighbor in self.graph.neighbors(current) {
+            if !visited.contains(&neighbor) {
+                visited.insert(neighbor);
+                path.push(neighbor);
+
+                self.dfs_paths(neighbor, target, path, visited, all_paths, max_depth, current_depth + 1);
+
+                path.pop();
+                visited.remove(&neighbor);
+            }
+        }
+    }
+
+    fn detect_requirement_conflict(&self, node1: NodeIndex, node2: NodeIndex) -> AionResult<Option<ConflictPath>> {
+        let node1_data = &self.graph[node1];
+        let node2_data = &self.graph[node2];
+
+        // Check for semantic conflicts
+        let semantic_similarity = self.cosine_similarity(&node1_data.embeddings, &node2_data.embeddings);
+
+        // High semantic similarity but different requirements may indicate conflict
+        if semantic_similarity > 0.8 {
+            // Check if they have conflicting properties
+            if let (Some(PropertyValue::Boolean(mandatory1)), Some(PropertyValue::Boolean(mandatory2))) =
+                (node1_data.properties.get("mandatory"), node2_data.properties.get("mandatory")) {
+
+                if *mandatory1 && *mandatory2 {
+                    // Both mandatory but semantically similar - potential conflict
+                    let conflict_step = ConflictStep {
+                        step_id: 0,
+                        relationship_type: RelationshipType::Contradicts,
+                        conflict_description: "Semantically similar but potentially conflicting mandatory requirements".to_string(),
+                        confidence: semantic_similarity * 0.7,
+                    };
+
+                    return Ok(Some(ConflictPath {
+                        source_entity: node1_data.entity_id.clone(),
+                        target_entity: node2_data.entity_id.clone(),
+                        conflict_steps: vec![conflict_step],
+                        conflict_severity: semantic_similarity * 0.7,
+                        resolution_suggestions: vec![
+                            "Review requirement specifications for potential overlap".to_string(),
+                            "Consider merging or clarifying distinct requirements".to_string(),
+                        ],
+                    }));
+                }
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn detect_temporal_conflicts(&self, node_index: NodeIndex) -> AionResult<Option<ConflictPath>> {
+        let node = &self.graph[node_index];
+
+        // Check for temporal inconsistencies in connected nodes
+        for neighbor in self.graph.neighbors(node_index) {
+            if let Some(edge_index) = self.graph.find_edge(node_index, neighbor) {
+                let edge = &self.graph[edge_index];
+                let neighbor_node = &self.graph[neighbor];
+
+                // Check if temporal validity conflicts with node creation time
+                if let Some(temporal_range) = &edge.temporal_validity {
+                    if neighbor_node.last_updated < temporal_range.start {
+                        let conflict_step = ConflictStep {
+                            step_id: 0,
+                            relationship_type: RelationshipType::Contradicts,
+                            conflict_description: "Node updated before relationship temporal validity period".to_string(),
+                            confidence: 0.8,
+                        };
+
+                        return Ok(Some(ConflictPath {
+                            source_entity: node.entity_id.clone(),
+                            target_entity: neighbor_node.entity_id.clone(),
+                            conflict_steps: vec![conflict_step],
+                            conflict_severity: 0.8,
+                            resolution_suggestions: vec![
+                                "Verify temporal consistency of relationship validity".to_string(),
+                                "Update node timestamps or relationship validity period".to_string(),
+                            ],
+                        }));
+                    }
+                }
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn detect_authority_conflicts(&self, node_index: NodeIndex) -> AionResult<Option<ConflictPath>> {
+        let node = &self.graph[node_index];
+
+        // Find nodes with conflicting authority relationships
+        for neighbor in self.graph.neighbors(node_index) {
+            if let Some(edge_index) = self.graph.find_edge(node_index, neighbor) {
+                let edge = &self.graph[edge_index];
+                let neighbor_node = &self.graph[neighbor];
+
+                // Check for conflicting authority relationships
+                if matches!(edge.relationship_type, RelationshipType::Supersedes | RelationshipType::Governs) {
+                    // Look for reverse relationships that would create a conflict
+                    if let Some(reverse_edge) = self.graph.find_edge(neighbor, node_index) {
+                        let reverse_edge_data = &self.graph[reverse_edge];
+
+                        if matches!(reverse_edge_data.relationship_type, RelationshipType::Supersedes | RelationshipType::Governs) {
+                            let conflict_step = ConflictStep {
+                                step_id: 0,
+                                relationship_type: RelationshipType::Contradicts,
+                                conflict_description: "Mutual authority conflict - both entities claim precedence".to_string(),
+                                confidence: 0.9,
+                            };
+
+                            return Ok(Some(ConflictPath {
+                                source_entity: node.entity_id.clone(),
+                                target_entity: neighbor_node.entity_id.clone(),
+                                conflict_steps: vec![conflict_step],
+                                conflict_severity: 0.9,
+                                resolution_suggestions: vec![
+                                    "Clarify authority hierarchy between entities".to_string(),
+                                    "Review legal precedence and jurisdiction rules".to_string(),
+                                ],
+                            }));
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn generate_conflict_description(&self, _from: &NodeIndex, _to: &NodeIndex, relationship_type: &RelationshipType) -> String {
+        match relationship_type {
+            RelationshipType::ConflictsWith => "Direct conflict identified between regulatory requirements".to_string(),
+            RelationshipType::Contradicts => "Contradictory specifications detected".to_string(),
+            RelationshipType::Supersedes => "Supersession relationship may create compliance conflicts".to_string(),
+            RelationshipType::Requires => "Conflicting dependency requirements".to_string(),
+            _ => "Potential regulatory inconsistency".to_string(),
+        }
+    }
+
+    fn generate_conflict_resolutions(&self, conflict_steps: &[ConflictStep]) -> Vec<String> {
+        let mut resolutions = Vec::new();
+
+        for step in conflict_steps {
+            match step.relationship_type {
+                RelationshipType::ConflictsWith => {
+                    resolutions.push("Implement prioritization framework for conflicting requirements".to_string());
+                    resolutions.push("Seek regulatory clarification or amendment".to_string());
+                },
+                RelationshipType::Contradicts => {
+                    resolutions.push("Harmonize contradictory provisions through policy alignment".to_string());
+                    resolutions.push("Implement exception handling procedures".to_string());
+                },
+                RelationshipType::Supersedes => {
+                    resolutions.push("Ensure proper temporal sequencing of regulatory updates".to_string());
+                    resolutions.push("Implement transitional compliance measures".to_string());
+                },
+                _ => {
+                    resolutions.push("Review regulatory interpretation and implementation guidelines".to_string());
+                }
+            }
+        }
+
+        resolutions.sort();
+        resolutions.dedup();
+        resolutions
+    }
+
+    fn analyze_relationship_implications(&self, relationship_type: &RelationshipType) -> Vec<String> {
+        match relationship_type {
+            RelationshipType::DependsOn => vec![
+                "Dependency chain must be maintained for compliance".to_string(),
+                "Changes to dependency may affect dependent regulations".to_string(),
+            ],
+            RelationshipType::Supersedes => vec![
+                "Previous regulation is no longer enforceable".to_string(),
+                "Transition period may apply for implementation".to_string(),
+            ],
+            RelationshipType::Requires => vec![
+                "Mandatory compliance requirement".to_string(),
+                "Non-compliance may result in penalties".to_string(),
+            ],
+            RelationshipType::ConflictsWith => vec![
+                "Potential compliance conflict requires resolution".to_string(),
+                "Legal advice may be required for interpretation".to_string(),
+            ],
+            RelationshipType::Harmonizes => vec![
+                "Regulations work together synergistically".to_string(),
+                "Aligned implementation approach recommended".to_string(),
+            ],
+            _ => vec!["Standard regulatory relationship".to_string()],
+        }
     }
 
     fn extract_relevant_properties(&self, _node: &KnowledgeNode, _query: &str) -> HashMap<String, PropertyValue> {
@@ -770,20 +1114,236 @@ impl RegulatoryKnowledgeGraph {
         Ok(Vec::new()) // Placeholder
     }
 
-    fn calculate_betweenness_centrality(&self, _node: NodeIndex) -> AionResult<f64> {
-        Ok(0.5) // Placeholder
+    fn calculate_betweenness_centrality(&self, target_node: NodeIndex) -> AionResult<f64> {
+        let node_count = self.graph.node_count();
+        if node_count <= 2 {
+            return Ok(0.0);
+        }
+
+        let mut betweenness = 0.0;
+        let mut path_count = 0;
+
+        // For each pair of nodes (excluding target)
+        for source in self.graph.node_indices() {
+            if source == target_node {
+                continue;
+            }
+
+            for target in self.graph.node_indices() {
+                if target == target_node || target == source {
+                    continue;
+                }
+
+                // Find all shortest paths between source and target
+                let shortest_paths = self.find_shortest_paths(source, target)?;
+                if !shortest_paths.is_empty() {
+                    path_count += 1;
+
+                    // Count how many paths go through target_node
+                    let paths_through_target = shortest_paths.iter()
+                        .filter(|path| path.contains(&target_node))
+                        .count();
+
+                    if paths_through_target > 0 {
+                        betweenness += paths_through_target as f64 / shortest_paths.len() as f64;
+                    }
+                }
+            }
+        }
+
+        // Normalize by the maximum possible betweenness
+        let max_betweenness = (node_count - 1) * (node_count - 2) / 2;
+        if max_betweenness > 0 {
+            Ok(betweenness / max_betweenness as f64)
+        } else {
+            Ok(0.0)
+        }
     }
 
-    fn calculate_closeness_centrality(&self, _node: NodeIndex) -> AionResult<f64> {
-        Ok(0.5) // Placeholder
+    fn calculate_closeness_centrality(&self, node: NodeIndex) -> AionResult<f64> {
+        let mut total_distance = 0.0;
+        let mut reachable_nodes = 0;
+
+        // Calculate shortest path distances to all other nodes
+        for target in self.graph.node_indices() {
+            if target == node {
+                continue;
+            }
+
+            if let Some(distance) = self.shortest_path_distance(node, target)? {
+                total_distance += distance;
+                reachable_nodes += 1;
+            }
+        }
+
+        // Closeness is the inverse of average distance
+        if reachable_nodes > 0 && total_distance > 0.0 {
+            Ok(reachable_nodes as f64 / total_distance)
+        } else {
+            Ok(0.0)
+        }
     }
 
-    fn calculate_eigenvector_centrality(&self, _node: NodeIndex) -> AionResult<f64> {
-        Ok(0.5) // Placeholder
+    fn calculate_eigenvector_centrality(&self, target_node: NodeIndex) -> AionResult<f64> {
+        let node_count = self.graph.node_count();
+        if node_count == 0 {
+            return Ok(0.0);
+        }
+
+        // Simple approximation using degree centrality weighted by neighbor importance
+        let neighbors: Vec<_> = self.graph.neighbors(target_node).collect();
+        let degree = neighbors.len() as f64;
+
+        if degree == 0.0 {
+            return Ok(0.0);
+        }
+
+        // Weight by neighbors' degrees (simplified eigenvector approximation)
+        let mut weighted_degree = 0.0;
+        for neighbor in neighbors {
+            let neighbor_degree = self.graph.neighbors(neighbor).count() as f64;
+            weighted_degree += neighbor_degree;
+        }
+
+        // Normalize by maximum possible weighted degree
+        let max_degree = node_count as f64 - 1.0;
+        let eigenvector_centrality = weighted_degree / (degree * max_degree);
+
+        Ok(eigenvector_centrality.min(1.0))
     }
 
-    fn calculate_pagerank(&self, _node: NodeIndex) -> AionResult<f64> {
-        Ok(0.5) // Placeholder
+    fn calculate_pagerank(&self, target_node: NodeIndex) -> AionResult<f64> {
+        let node_count = self.graph.node_count();
+        if node_count == 0 {
+            return Ok(0.0);
+        }
+
+        let damping_factor = 0.85;
+        let mut pagerank_values: HashMap<NodeIndex, f64> = HashMap::new();
+
+        // Initialize all nodes with equal probability
+        let initial_value = 1.0 / node_count as f64;
+        for node_idx in self.graph.node_indices() {
+            pagerank_values.insert(node_idx, initial_value);
+        }
+
+        // Iterative PageRank calculation (simplified - 10 iterations)
+        for _ in 0..10 {
+            let mut new_values: HashMap<NodeIndex, f64> = HashMap::new();
+
+            for node_idx in self.graph.node_indices() {
+                let mut rank = (1.0 - damping_factor) / node_count as f64;
+
+                // Sum contributions from incoming links
+                for predecessor in self.graph.neighbors_directed(node_idx, Direction::Incoming) {
+                    let pred_out_degree = self.graph.neighbors_directed(predecessor, Direction::Outgoing).count();
+                    if pred_out_degree > 0 {
+                        let contribution = pagerank_values.get(&predecessor).unwrap_or(&initial_value);
+                        rank += damping_factor * contribution / pred_out_degree as f64;
+                    }
+                }
+
+                new_values.insert(node_idx, rank);
+            }
+
+            pagerank_values = new_values;
+        }
+
+        Ok(*pagerank_values.get(&target_node).unwrap_or(&initial_value))
+    }
+
+    // Helper methods for centrality calculations
+    fn find_shortest_paths(&self, source: NodeIndex, target: NodeIndex) -> AionResult<Vec<Vec<NodeIndex>>> {
+        let mut paths = Vec::new();
+        let mut queue = VecDeque::new();
+        let mut distances: HashMap<NodeIndex, usize> = HashMap::new();
+        let mut predecessors: HashMap<NodeIndex, Vec<NodeIndex>> = HashMap::new();
+
+        // BFS to find shortest path distances
+        queue.push_back(source);
+        distances.insert(source, 0);
+
+        while let Some(current) = queue.pop_front() {
+            let current_dist = *distances.get(&current).unwrap();
+
+            for neighbor in self.graph.neighbors(current) {
+                let new_dist = current_dist + 1;
+
+                match distances.get(&neighbor) {
+                    None => {
+                        // First time visiting this node
+                        distances.insert(neighbor, new_dist);
+                        predecessors.insert(neighbor, vec![current]);
+                        queue.push_back(neighbor);
+                    },
+                    Some(&existing_dist) if new_dist == existing_dist => {
+                        // Another shortest path to this node
+                        predecessors.get_mut(&neighbor).unwrap().push(current);
+                    },
+                    Some(&existing_dist) if new_dist < existing_dist => {
+                        // Shorter path found (shouldn't happen in BFS)
+                        distances.insert(neighbor, new_dist);
+                        predecessors.insert(neighbor, vec![current]);
+                    },
+                    _ => {
+                        // Longer path, ignore
+                    }
+                }
+            }
+        }
+
+        // Reconstruct all shortest paths
+        if distances.contains_key(&target) {
+            self.reconstruct_all_paths(source, target, &predecessors, &mut paths);
+        }
+
+        Ok(paths)
+    }
+
+    fn reconstruct_all_paths(&self, source: NodeIndex, current: NodeIndex,
+                           predecessors: &HashMap<NodeIndex, Vec<NodeIndex>>,
+                           all_paths: &mut Vec<Vec<NodeIndex>>) {
+        if current == source {
+            all_paths.push(vec![source]);
+            return;
+        }
+
+        if let Some(preds) = predecessors.get(&current) {
+            for &pred in preds {
+                let mut sub_paths = Vec::new();
+                self.reconstruct_all_paths(source, pred, predecessors, &mut sub_paths);
+
+                for mut path in sub_paths {
+                    path.push(current);
+                    all_paths.push(path);
+                }
+            }
+        }
+    }
+
+    fn shortest_path_distance(&self, source: NodeIndex, target: NodeIndex) -> AionResult<Option<f64>> {
+        let mut distances: HashMap<NodeIndex, f64> = HashMap::new();
+        let mut queue = VecDeque::new();
+
+        distances.insert(source, 0.0);
+        queue.push_back(source);
+
+        while let Some(current) = queue.pop_front() {
+            if current == target {
+                return Ok(distances.get(&target).copied());
+            }
+
+            let current_dist = *distances.get(&current).unwrap();
+
+            for neighbor in self.graph.neighbors(current) {
+                if !distances.contains_key(&neighbor) {
+                    distances.insert(neighbor, current_dist + 1.0);
+                    queue.push_back(neighbor);
+                }
+            }
+        }
+
+        Ok(None) // No path found
     }
 
     fn get_frameworks_by_sector(&self, _sector: &str) -> AionResult<Vec<String>> {
