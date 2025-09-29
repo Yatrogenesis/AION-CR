@@ -336,6 +336,159 @@ impl DynamicRulesEngine {
     }
 
     fn vectorize_rules(&self, rules: &[AtomicLegalRule]) -> AionResult<Vec<RuleVector>> {
+        let mut rule_vectors = Vec::new();
+
+        for rule in rules {
+            // Create comprehensive vector representation of the rule
+            let mut vector = Vec::new();
+
+            // Text features (simplified embedding simulation)
+            let text_features = self.text_to_vector(&rule.rule_text)?;
+            vector.extend(text_features);
+
+            // Categorical features
+            let categorical_features = self.categorical_to_vector(rule)?;
+            vector.extend(categorical_features);
+
+            // Temporal features
+            let temporal_features = self.temporal_to_vector(&rule.scope.temporal_scope)?;
+            vector.extend(temporal_features);
+
+            // Complexity features
+            let complexity_features = self.complexity_to_vector(rule)?;
+            vector.extend(complexity_features);
+
+            // Pad or truncate to standard size (512 dimensions)
+            while vector.len() < 512 {
+                vector.push(0.0);
+            }
+            vector.truncate(512);
+
+            rule_vectors.push(RuleVector {
+                rule_id: rule.id,
+                rule_code: rule.rule_code.clone(),
+                vector,
+                confidence: rule.metadata.confidence_score,
+            });
+        }
+
+        Ok(rule_vectors)
+    }
+
+    fn text_to_vector(&self, text: &str) -> AionResult<Vec<f64>> {
+        // Simplified text vectorization (in production, would use transformer models)
+        let mut vector = vec![0.0; 256]; // First 256 dimensions for text
+
+        let words: Vec<&str> = text.split_whitespace().collect();
+        for (i, word) in words.iter().enumerate().take(50) { // Use first 50 words
+            let hash = self.simple_hash(word) % 256;
+            vector[hash] += 1.0 / (i + 1) as f64; // Weighted by position
+        }
+
+        // Normalize vector
+        let norm: f64 = vector.iter().map(|x| x * x).sum::<f64>().sqrt();
+        if norm > 0.0 {
+            for x in &mut vector {
+                *x /= norm;
+            }
+        }
+
+        Ok(vector)
+    }
+
+    fn categorical_to_vector(&self, rule: &AtomicLegalRule) -> AionResult<Vec<f64>> {
+        let mut vector = vec![0.0; 128]; // 128 dimensions for categorical features
+
+        // Jurisdiction encoding (one-hot style)
+        for (i, jurisdiction) in rule.scope.geographic_scope.iter().enumerate().take(20) {
+            let jurisdiction_hash = self.simple_hash(&format!("{:?}", jurisdiction)) % 20;
+            vector[jurisdiction_hash] = 1.0;
+        }
+
+        // Entity type encoding
+        for (i, entity) in rule.scope.entity_scope.iter().enumerate().take(20) {
+            let entity_hash = self.simple_hash(&format!("{:?}", entity)) % 20;
+            vector[20 + entity_hash] = 1.0;
+        }
+
+        // Activity type encoding
+        for (i, activity) in rule.scope.activity_scope.iter().enumerate().take(20) {
+            let activity_hash = self.simple_hash(&format!("{:?}", activity)) % 20;
+            vector[40 + activity_hash] = 1.0;
+        }
+
+        // Penalty encoding
+        for (i, penalty) in rule.penalties.iter().enumerate().take(20) {
+            let penalty_hash = self.simple_hash(&format!("{:?}", penalty)) % 20;
+            vector[60 + penalty_hash] = 1.0;
+        }
+
+        Ok(vector)
+    }
+
+    fn temporal_to_vector(&self, temporal_scope: &TemporalScope) -> AionResult<Vec<f64>> {
+        let mut vector = vec![0.0; 64]; // 64 dimensions for temporal features
+
+        // Effective date encoding
+        let effective_timestamp = temporal_scope.effective_date.timestamp() as f64;
+        vector[0] = (effective_timestamp / 1_000_000_000.0) % 1.0; // Normalize timestamp
+
+        // Expiration date encoding
+        if let Some(expiration_date) = temporal_scope.expiration_date {
+            let expiration_timestamp = expiration_date.timestamp() as f64;
+            vector[1] = (expiration_timestamp / 1_000_000_000.0) % 1.0;
+            vector[2] = 1.0; // Has expiration flag
+        }
+
+        // Transitional periods
+        vector[3] = temporal_scope.transitional_periods.len() as f64 / 10.0; // Normalize
+
+        // Grandfathering provisions
+        vector[4] = temporal_scope.grandfathering_provisions.len() as f64 / 10.0; // Normalize
+
+        Ok(vector)
+    }
+
+    fn complexity_to_vector(&self, rule: &AtomicLegalRule) -> AionResult<Vec<f64>> {
+        let mut vector = vec![0.0; 64]; // 64 dimensions for complexity features
+
+        // Basic complexity metrics
+        vector[0] = rule.applicability_conditions.len() as f64 / 10.0; // Normalize
+        vector[1] = rule.exceptions.len() as f64 / 10.0;
+        vector[2] = rule.interpretations.len() as f64 / 10.0;
+        vector[3] = rule.related_rules.len() as f64 / 10.0;
+        vector[4] = rule.precedents.len() as f64 / 10.0;
+
+        // Text complexity
+        let text_length = rule.rule_text.len() as f64;
+        vector[5] = (text_length / 1000.0).min(1.0); // Normalize, cap at 1.0
+
+        let word_count = rule.rule_text.split_whitespace().count() as f64;
+        vector[6] = (word_count / 100.0).min(1.0); // Normalize, cap at 1.0
+
+        // Metadata complexity
+        vector[7] = match rule.metadata.complexity_level {
+            ComplexityLevel::Simple => 0.25,
+            ComplexityLevel::Moderate => 0.5,
+            ComplexityLevel::Complex => 0.75,
+            ComplexityLevel::ExpertRequired => 1.0,
+        };
+
+        vector[8] = match rule.metadata.impact_level {
+            ImpactLevel::Low => 0.2,
+            ImpactLevel::Medium => 0.5,
+            ImpactLevel::High => 0.8,
+            ImpactLevel::VeryHigh => 1.0,
+        };
+
+        vector[9] = rule.metadata.confidence_score;
+
+        Ok(vector)
+    }
+
+    fn simple_hash(&self, s: &str) -> usize {
+        s.chars().fold(0, |acc, c| acc.wrapping_mul(31).wrapping_add(c as usize))
+    }
         let mut vectors = Vec::new();
 
         for rule in rules {

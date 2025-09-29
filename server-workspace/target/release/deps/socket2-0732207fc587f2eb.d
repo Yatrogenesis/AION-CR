@@ -1,0 +1,11 @@
+C:\Users\alrom\AION-CR\server-workspace\target\release\deps\libsocket2-0732207fc587f2eb.rmeta: C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\lib.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockaddr.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\socket.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockref.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sys\windows.rs
+
+C:\Users\alrom\AION-CR\server-workspace\target\release\deps\libsocket2-0732207fc587f2eb.rlib: C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\lib.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockaddr.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\socket.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockref.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sys\windows.rs
+
+C:\Users\alrom\AION-CR\server-workspace\target\release\deps\socket2-0732207fc587f2eb.d: C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\lib.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockaddr.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\socket.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockref.rs C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sys\windows.rs
+
+C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\lib.rs:
+C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockaddr.rs:
+C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\socket.rs:
+C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sockref.rs:
+C:\Users\alrom\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\socket2-0.6.0\src\sys\windows.rs:

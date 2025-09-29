@@ -3,6 +3,7 @@ use aion_core::{
     NormativeFramework, NormativeId, RequirementAssessment, Evidence, Finding, Recommendation,
     GovernanceContext, BusinessRuleEngine
 };
+use crate::dynamic_rules_engine::DynamicRulesEngine;
 use std::collections::HashMap;
 use std::sync::Arc;
 use chrono::Utc;
@@ -13,15 +14,23 @@ pub struct AdvancedComplianceEngine {
     assessment_cache: HashMap<String, ComplianceAssessment>,
     compliance_rules: Vec<ComplianceRule>,
     evidence_validators: HashMap<String, Box<dyn Fn(&Evidence) -> bool + Send + Sync>>,
+    dynamic_rules_engine: DynamicRulesEngine,
 }
 
 impl AdvancedComplianceEngine {
     pub fn new(business_rule_engine: Arc<dyn BusinessRuleEngine + Send + Sync>) -> Self {
+        let mut dynamic_rules_engine = DynamicRulesEngine::new();
+        // Load default compliance rules
+        if let Err(e) = dynamic_rules_engine.load_default_rules() {
+            tracing::warn!("Failed to load default rules: {}", e);
+        }
+
         let mut engine = Self {
             business_rule_engine,
             assessment_cache: HashMap::new(),
             compliance_rules: Vec::new(),
             evidence_validators: HashMap::new(),
+            dynamic_rules_engine,
         };
 
         engine.initialize_compliance_rules();
@@ -423,7 +432,16 @@ impl AdvancedComplianceEngine {
         Ok(results)
     }
 
-    fn evaluate_validation_rule(&self, rule: &aion_core::ValidationRule, context: &GovernanceContext) -> AionResult<bool> {
+    fn evaluate_validation_rule(&mut self, rule: &aion_core::ValidationRule, context: &GovernanceContext) -> AionResult<bool> {
+        // First try dynamic rules engine
+        match self.dynamic_rules_engine.evaluate_rule(rule, context) {
+            Ok(result) => return Ok(result),
+            Err(e) => {
+                tracing::debug!("Dynamic rule evaluation failed, falling back to static rules: {}", e);
+            }
+        }
+
+        // Fallback to static rule evaluation
         match rule.rule_type.as_str() {
             "presence" => self.validate_presence_rule(rule, context),
             "format" => self.validate_format_rule(rule, context),

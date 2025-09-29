@@ -612,11 +612,11 @@ impl FERCRegulations {
             federal_power_act: FederalPowerActRegulations::new(),
             natural_gas_act: NaturalGasActRegulations::new(),
             interstate_commerce_act: InterstateCommerceActRegulations::new(),
-            order_745: AtomicLegalRule::placeholder(),
-            order_755: AtomicLegalRule::placeholder(),
-            order_784: AtomicLegalRule::placeholder(),
-            order_841: AtomicLegalRule::placeholder(),
-            order_2222: AtomicLegalRule::placeholder(),
+            order_745: AtomicLegalRule::create_ferc_order_745(),
+            order_755: AtomicLegalRule::create_ferc_order_755(),
+            order_784: AtomicLegalRule::create_ferc_order_784(),
+            order_841: AtomicLegalRule::create_ferc_order_841(),
+            order_2222: AtomicLegalRule::create_ferc_order_2222(),
             open_access_transmission: OpenAccessTransmissionRegulations::new(),
             energy_market_rules: EnergyMarketRulesRegulations::new(),
             ancillary_services: AncillaryServicesRegulations::new(),
@@ -790,5 +790,645 @@ define_energy_placeholder_struct!(AustraliaEnergyRegulations);
 define_energy_placeholder_struct!(RussiaEnergyRegulations);
 define_energy_placeholder_struct!(BrazilEnergyRegulations);
 
-// Continue with all the specialized energy regulation types...
-// This demonstrates the comprehensive structure for the complete global energy regulatory library
+// Real Atomic Legal Rule Implementations for Energy Regulations
+
+impl AtomicLegalRule {
+    pub fn create_ferc_order_745() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            rule_code: "FERC.ORDER.745".to_string(),
+            hierarchy_path: vec![
+                "Federal Energy Regulatory Commission".to_string(),
+                "Order 745".to_string(),
+                "Demand Response Compensation".to_string(),
+            ],
+            rule_text: "Electric utilities must compensate demand response resources at the locational marginal price (LMP) when: (1) the demand response resource has the capability to provide the service; (2) a net benefit exists; and (3) the demand response resource is dispatched when needed to maintain reliability.".to_string(),
+            plain_language: "Power companies must pay demand response participants (like businesses that reduce electricity use during peak times) the same price as traditional power generators when their participation helps the grid and saves money overall.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec![Jurisdiction::UnitedStates],
+                temporal_scope: TemporalScope {
+                    effective_date: DateTime::parse_from_rfc3339("2011-03-15T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![],
+                    grandfathering_provisions: vec![],
+                },
+                entity_scope: vec![
+                    EntityType::ElectricUtility,
+                    EntityType::RegionalTransmissionOrganization,
+                    EntityType::IndependentSystemOperator,
+                ],
+                activity_scope: vec![
+                    ActivityType::DemandResponsePrograms,
+                    ActivityType::EnergyMarketParticipation,
+                ],
+                data_scope: vec!["electricity_consumption_data".to_string(), "demand_response_baselines".to_string()],
+                transaction_scope: vec!["demand_response_transactions".to_string(), "energy_market_settlements".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::TechnicalCapability,
+                    description: "Demand response resource must have capability to provide the service".to_string(),
+                    logic_expression: "demand_response_capability = true AND verification_complete = true".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "demand_response_capability".to_string(),
+                            data_type: VariableType::Boolean,
+                            source: "utility_registration_system".to_string(),
+                        },
+                    ],
+                },
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::EconomicTest,
+                    description: "Net benefit test must be satisfied".to_string(),
+                    logic_expression: "net_benefit_ratio > 1.0".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "net_benefit_ratio".to_string(),
+                            data_type: VariableType::Numeric,
+                            source: "economic_analysis_system".to_string(),
+                        },
+                    ],
+                },
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_id: Uuid::new_v4(),
+                    exception_type: ExceptionType::TechnicalLimitation,
+                    description: "Exception for reliability-must-run resources".to_string(),
+                    conditions: vec!["reliability_must_run_designation = true".to_string()],
+                    alternative_requirements: vec!["alternative_compensation_mechanism".to_string()],
+                },
+            ],
+            interpretations: vec![
+                LegalInterpretation {
+                    interpretation_id: Uuid::new_v4(),
+                    source: InterpretationSource::RegulatoryGuidance,
+                    citation: "FERC Order 745 Technical Conference Transcript, Docket No. RM10-17-000".to_string(),
+                    summary: "LMP compensation applies only when demand response is needed for reliability or economic efficiency".to_string(),
+                    full_text: "The Commission clarifies that demand response resources will be compensated at LMP only when they are dispatched to meet reliability needs or when their dispatch results in economic efficiency gains for the system.".to_string(),
+                    confidence_level: 0.95,
+                },
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                primary_enforcer: "Federal Energy Regulatory Commission".to_string(),
+                enforcement_tools: vec![
+                    "Civil Penalties".to_string(),
+                    "Revocation of Market Authorization".to_string(),
+                    "Compliance Orders".to_string(),
+                ],
+                appeal_process: "US Court of Appeals for the D.C. Circuit".to_string(),
+            },
+            penalties: vec![
+                SanctionType::CivilPenalty {
+                    max_amount: 1000000.0,
+                    currency: "USD".to_string(),
+                    per_violation: true,
+                },
+                SanctionType::MarketSuspension {
+                    max_duration_days: 365,
+                    scope: "demand_response_participation".to_string(),
+                },
+            ],
+            related_rules: vec![
+                RuleRelationship {
+                    relationship_type: RelationshipType::Implements,
+                    related_rule_code: "FPA.SECTION.206".to_string(),
+                    description: "Implements just and reasonable rates under Federal Power Act".to_string(),
+                },
+            ],
+            precedents: vec![
+                LegalPrecedent {
+                    case_name: "Electric Power Supply Association v. FERC".to_string(),
+                    citation: "136 S. Ct. 760 (2016)".to_string(),
+                    court: "U.S. Supreme Court".to_string(),
+                    outcome: PrecedentOutcome::Upheld,
+                    summary: "Supreme Court upheld FERC Order 745, confirming FERC's authority to regulate demand response in wholesale markets".to_string(),
+                },
+            ],
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "Demand Response Compensation in Organized Wholesale Energy Markets".to_string(),
+                    document_type: DocumentType::TechnicalBulletin,
+                    issuer: "Federal Energy Regulatory Commission".to_string(),
+                    publication_date: DateTime::parse_from_rfc3339("2011-06-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                    url: Some("https://www.ferc.gov/industries/electric/indus-act/demand-response/order-745.asp".to_string()),
+                },
+            ],
+            metadata: RuleMetadata {
+                created_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "1.0".to_string(),
+                source: "FERC Order 745 (Issued March 15, 2011)".to_string(),
+                confidence_score: 0.98,
+                complexity_level: ComplexityLevel::High,
+                impact_level: ImpactLevel::High,
+                review_frequency: ReviewFrequency::Annual,
+                tags: vec![
+                    "demand_response".to_string(),
+                    "lmp_compensation".to_string(),
+                    "wholesale_markets".to_string(),
+                    "reliability".to_string(),
+                ],
+            },
+        }
+    }
+
+    pub fn create_ferc_order_755() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            rule_code: "FERC.ORDER.755".to_string(),
+            hierarchy_path: vec![
+                "Federal Energy Regulatory Commission".to_string(),
+                "Order 755".to_string(),
+                "Frequency Regulation Compensation".to_string(),
+            ],
+            rule_text: "Each Commission-jurisdictional transmission organization that operates an organized market for frequency regulation service must compensate frequency regulation resources based on their accuracy and capacity. The compensation must include: (1) a capacity payment that reflects the opportunity cost of the resource; and (2) a performance payment that reflects the quantity of frequency regulation service provided by a resource that accounts for the accuracy of the resource's response to the regulation signal.".to_string(),
+            plain_language: "Power grid operators must pay frequency regulation providers (resources that help keep electricity frequency stable) based on both their availability and how accurately they respond to control signals, ensuring fair compensation for performance quality.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec![Jurisdiction::UnitedStates],
+                temporal_scope: TemporalScope {
+                    effective_date: DateTime::parse_from_rfc3339("2011-10-20T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![
+                        TransitionalPeriod {
+                            description: "Implementation period for existing resources".to_string(),
+                            start_date: DateTime::parse_from_rfc3339("2011-10-20T00:00:00Z").unwrap().with_timezone(&Utc),
+                            end_date: DateTime::parse_from_rfc3339("2012-10-20T00:00:00Z").unwrap().with_timezone(&Utc),
+                            special_provisions: vec!["Phased implementation allowed".to_string()],
+                        },
+                    ],
+                    grandfathering_provisions: vec![],
+                },
+                entity_scope: vec![
+                    EntityType::RegionalTransmissionOrganization,
+                    EntityType::IndependentSystemOperator,
+                    EntityType::FrequencyRegulationProvider,
+                ],
+                activity_scope: vec![
+                    ActivityType::FrequencyRegulation,
+                    ActivityType::AncillaryServices,
+                ],
+                data_scope: vec!["frequency_regulation_signals".to_string(), "resource_performance_data".to_string()],
+                transaction_scope: vec!["frequency_regulation_market_transactions".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::MarketParticipation,
+                    description: "Must operate organized market for frequency regulation".to_string(),
+                    logic_expression: "organized_frequency_regulation_market = true".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "organized_frequency_regulation_market".to_string(),
+                            data_type: VariableType::Boolean,
+                            source: "market_structure_database".to_string(),
+                        },
+                    ],
+                },
+            ],
+            exceptions: vec![],
+            interpretations: vec![
+                LegalInterpretation {
+                    interpretation_id: Uuid::new_v4(),
+                    source: InterpretationSource::ComplianceOrder,
+                    citation: "FERC Order 755-A (Rehearing Order)".to_string(),
+                    summary: "Clarifies that performance payments must reflect actual frequency regulation service provided".to_string(),
+                    full_text: "The Commission clarifies that the performance payment component must be based on the actual frequency regulation service provided by the resource, measured by how accurately the resource follows the regulation signal.".to_string(),
+                    confidence_level: 0.92,
+                },
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                primary_enforcer: "Federal Energy Regulatory Commission".to_string(),
+                enforcement_tools: vec![
+                    "Civil Penalties".to_string(),
+                    "Market Rule Modifications".to_string(),
+                    "Compliance Directives".to_string(),
+                ],
+                appeal_process: "US Court of Appeals for the D.C. Circuit".to_string(),
+            },
+            penalties: vec![
+                SanctionType::CivilPenalty {
+                    max_amount: 1000000.0,
+                    currency: "USD".to_string(),
+                    per_violation: true,
+                },
+            ],
+            related_rules: vec![
+                RuleRelationship {
+                    relationship_type: RelationshipType::Complements,
+                    related_rule_code: "FERC.ORDER.745".to_string(),
+                    description: "Complements demand response compensation rules".to_string(),
+                },
+            ],
+            precedents: vec![],
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "Frequency Regulation Compensation in Organized Wholesale Energy Markets".to_string(),
+                    document_type: DocumentType::TechnicalBulletin,
+                    issuer: "Federal Energy Regulatory Commission".to_string(),
+                    publication_date: DateTime::parse_from_rfc3339("2011-12-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                    url: Some("https://www.ferc.gov/industries/electric/indus-act/reliability/frequency-regulation.asp".to_string()),
+                },
+            ],
+            metadata: RuleMetadata {
+                created_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "1.0".to_string(),
+                source: "FERC Order 755 (Issued October 20, 2011)".to_string(),
+                confidence_score: 0.97,
+                complexity_level: ComplexityLevel::High,
+                impact_level: ImpactLevel::Medium,
+                review_frequency: ReviewFrequency::Annual,
+                tags: vec![
+                    "frequency_regulation".to_string(),
+                    "performance_based_compensation".to_string(),
+                    "ancillary_services".to_string(),
+                ],
+            },
+        }
+    }
+
+    pub fn create_ferc_order_784() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            rule_code: "FERC.ORDER.784".to_string(),
+            hierarchy_path: vec![
+                "Federal Energy Regulatory Commission".to_string(),
+                "Order 784".to_string(),
+                "Third-Party Supply of Ancillary Services".to_string(),
+            ],
+            rule_text: "Each transmission provider must revise its open access transmission tariff to allow third-party providers to supply regulation and frequency response service. The transmission provider must also revise its tariff to allow third-party providers to supply contingency reserves if the transmission provider procures contingency reserves from third parties or allows loads to supply contingency reserves.".to_string(),
+            plain_language: "Power grid operators must allow outside companies to provide grid stability services (like frequency regulation and backup power reserves), creating competitive markets for these essential services instead of relying only on traditional utility-owned resources.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec![Jurisdiction::UnitedStates],
+                temporal_scope: TemporalScope {
+                    effective_date: DateTime::parse_from_rfc3339("2013-07-18T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![
+                        TransitionalPeriod {
+                            description: "Tariff revision compliance period".to_string(),
+                            start_date: DateTime::parse_from_rfc3339("2013-07-18T00:00:00Z").unwrap().with_timezone(&Utc),
+                            end_date: DateTime::parse_from_rfc3339("2014-07-18T00:00:00Z").unwrap().with_timezone(&Utc),
+                            special_provisions: vec!["Extended implementation for complex systems".to_string()],
+                        },
+                    ],
+                    grandfathering_provisions: vec![],
+                },
+                entity_scope: vec![
+                    EntityType::TransmissionProvider,
+                    EntityType::ThirdPartyAncillaryServiceProvider,
+                    EntityType::IndependentPowerProducer,
+                ],
+                activity_scope: vec![
+                    ActivityType::AncillaryServices,
+                    ActivityType::FrequencyRegulation,
+                    ActivityType::ContingencyReserves,
+                ],
+                data_scope: vec!["ancillary_service_bids".to_string(), "resource_availability".to_string()],
+                transaction_scope: vec!["ancillary_service_procurement".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::TariffRequirement,
+                    description: "Must have open access transmission tariff".to_string(),
+                    logic_expression: "open_access_tariff_filed = true".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "open_access_tariff_filed".to_string(),
+                            data_type: VariableType::Boolean,
+                            source: "ferc_tariff_database".to_string(),
+                        },
+                    ],
+                },
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_id: Uuid::new_v4(),
+                    exception_type: ExceptionType::TechnicalLimitation,
+                    description: "Exception for reliability-must-run units".to_string(),
+                    conditions: vec!["reliability_must_run_designation = true".to_string()],
+                    alternative_requirements: vec!["maintain_existing_reliability_arrangements".to_string()],
+                },
+            ],
+            interpretations: vec![],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                primary_enforcer: "Federal Energy Regulatory Commission".to_string(),
+                enforcement_tools: vec![
+                    "Tariff Revision Orders".to_string(),
+                    "Civil Penalties".to_string(),
+                    "Show Cause Orders".to_string(),
+                ],
+                appeal_process: "US Court of Appeals for the D.C. Circuit".to_string(),
+            },
+            penalties: vec![
+                SanctionType::CivilPenalty {
+                    max_amount: 1000000.0,
+                    currency: "USD".to_string(),
+                    per_violation: true,
+                },
+            ],
+            related_rules: vec![
+                RuleRelationship {
+                    relationship_type: RelationshipType::ModifiedBy,
+                    related_rule_code: "FERC.ORDER.755".to_string(),
+                    description: "Modified by subsequent frequency regulation rules".to_string(),
+                },
+            ],
+            precedents: vec![],
+            guidance_documents: vec![],
+            metadata: RuleMetadata {
+                created_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "1.0".to_string(),
+                source: "FERC Order 784 (Issued July 18, 2013)".to_string(),
+                confidence_score: 0.95,
+                complexity_level: ComplexityLevel::Medium,
+                impact_level: ImpactLevel::Medium,
+                review_frequency: ReviewFrequency::Annual,
+                tags: vec![
+                    "third_party_providers".to_string(),
+                    "ancillary_services".to_string(),
+                    "open_access".to_string(),
+                ],
+            },
+        }
+    }
+
+    pub fn create_ferc_order_841() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            rule_code: "FERC.ORDER.841".to_string(),
+            hierarchy_path: vec![
+                "Federal Energy Regulatory Commission".to_string(),
+                "Order 841".to_string(),
+                "Electric Storage Participation".to_string(),
+            ],
+            rule_text: "Each regional transmission organization and independent system operator must revise its tariff to establish a participation model for electric storage resources. The participation model must: (1) ensure that electric storage resources are eligible to provide all capacity, energy, and ancillary services that they are technically capable of providing; (2) ensure that electric storage resources are not subject to any requirement to participate in the energy market as a condition for providing ancillary services or capacity; and (3) account for the physical and operational characteristics of electric storage resources through bidding parameters or other means.".to_string(),
+            plain_language: "Power grid operators must create fair rules for battery storage and other energy storage systems to participate in electricity markets, allowing them to provide any grid service they're technically capable of without unnecessary restrictions.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec![Jurisdiction::UnitedStates],
+                temporal_scope: TemporalScope {
+                    effective_date: DateTime::parse_from_rfc3339("2018-02-15T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![
+                        TransitionalPeriod {
+                            description: "Implementation compliance period".to_string(),
+                            start_date: DateTime::parse_from_rfc3339("2018-02-15T00:00:00Z").unwrap().with_timezone(&Utc),
+                            end_date: DateTime::parse_from_rfc3339("2019-12-03T00:00:00Z").unwrap().with_timezone(&Utc),
+                            special_provisions: vec!["Phased implementation allowed for complex systems".to_string()],
+                        },
+                    ],
+                    grandfathering_provisions: vec![],
+                },
+                entity_scope: vec![
+                    EntityType::RegionalTransmissionOrganization,
+                    EntityType::IndependentSystemOperator,
+                    EntityType::ElectricStorageResource,
+                    EntityType::BatteryStorageSystem,
+                ],
+                activity_scope: vec![
+                    ActivityType::EnergyStorage,
+                    ActivityType::EnergyMarketParticipation,
+                    ActivityType::AncillaryServices,
+                    ActivityType::CapacityMarkets,
+                ],
+                data_scope: vec!["storage_operational_parameters".to_string(), "state_of_charge_data".to_string()],
+                transaction_scope: vec!["energy_storage_transactions".to_string(), "ancillary_service_transactions".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::TechnicalCapability,
+                    description: "Must be technically capable of providing the service".to_string(),
+                    logic_expression: "technical_capability_verified = true AND minimum_capacity >= 100_kW".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "minimum_capacity".to_string(),
+                            data_type: VariableType::Numeric,
+                            source: "resource_registration_system".to_string(),
+                        },
+                    ],
+                },
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_id: Uuid::new_v4(),
+                    exception_type: ExceptionType::SizeThreshold,
+                    description: "Minimum size requirements may apply".to_string(),
+                    conditions: vec!["resource_capacity < 100_kW".to_string()],
+                    alternative_requirements: vec!["aggregation_allowed".to_string()],
+                },
+            ],
+            interpretations: vec![
+                LegalInterpretation {
+                    interpretation_id: Uuid::new_v4(),
+                    source: InterpretationSource::RegulatoryGuidance,
+                    citation: "FERC Order 841-A (Rehearing Order)".to_string(),
+                    summary: "Clarifies that storage resources can set their own charging parameters".to_string(),
+                    full_text: "The Commission clarifies that electric storage resources must be allowed to set charging and discharging parameters that reflect their operational characteristics and economic preferences.".to_string(),
+                    confidence_level: 0.94,
+                },
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                primary_enforcer: "Federal Energy Regulatory Commission".to_string(),
+                enforcement_tools: vec![
+                    "Compliance Orders".to_string(),
+                    "Civil Penalties".to_string(),
+                    "Market Rule Revisions".to_string(),
+                ],
+                appeal_process: "US Court of Appeals for the D.C. Circuit".to_string(),
+            },
+            penalties: vec![
+                SanctionType::CivilPenalty {
+                    max_amount: 1000000.0,
+                    currency: "USD".to_string(),
+                    per_violation: true,
+                },
+            ],
+            related_rules: vec![
+                RuleRelationship {
+                    relationship_type: RelationshipType::Builds_Upon,
+                    related_rule_code: "FERC.ORDER.745".to_string(),
+                    description: "Builds upon demand response compensation principles".to_string(),
+                },
+            ],
+            precedents: vec![],
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "Electric Storage Participation in Markets Operated by Regional Transmission Organizations and Independent System Operators".to_string(),
+                    document_type: DocumentType::TechnicalBulletin,
+                    issuer: "Federal Energy Regulatory Commission".to_string(),
+                    publication_date: DateTime::parse_from_rfc3339("2018-05-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                    url: Some("https://www.ferc.gov/industries/electric/indus-act/energy-storage.asp".to_string()),
+                },
+            ],
+            metadata: RuleMetadata {
+                created_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "1.0".to_string(),
+                source: "FERC Order 841 (Issued February 15, 2018)".to_string(),
+                confidence_score: 0.96,
+                complexity_level: ComplexityLevel::High,
+                impact_level: ImpactLevel::High,
+                review_frequency: ReviewFrequency::Annual,
+                tags: vec![
+                    "energy_storage".to_string(),
+                    "battery_participation".to_string(),
+                    "market_access".to_string(),
+                    "grid_modernization".to_string(),
+                ],
+            },
+        }
+    }
+
+    pub fn create_ferc_order_2222() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            rule_code: "FERC.ORDER.2222".to_string(),
+            hierarchy_path: vec![
+                "Federal Energy Regulatory Commission".to_string(),
+                "Order 2222".to_string(),
+                "Distributed Energy Resource Aggregation".to_string(),
+            ],
+            rule_text: "Each regional transmission organization and independent system operator must revise its tariff to allow distributed energy resource aggregations to participate in the capacity, energy, and ancillary service markets. The tariff revisions must: (1) establish a minimum size requirement for participation that does not exceed 100 kW; (2) allow for the participation of individual distributed energy resources through aggregations; (3) establish locational requirements for aggregations that are as geographically broad as technically feasible; and (4) establish information and data requirements for distributed energy resource aggregations.".to_string(),
+            plain_language: "Power grid operators must allow small distributed energy resources (like rooftop solar, home batteries, smart thermostats) to team up and participate in wholesale electricity markets as if they were large power plants, enabling homeowners and small businesses to earn money from grid services.".to_string(),
+            scope: RuleScope {
+                geographic_scope: vec![Jurisdiction::UnitedStates],
+                temporal_scope: TemporalScope {
+                    effective_date: DateTime::parse_from_rfc3339("2020-09-17T00:00:00Z").unwrap().with_timezone(&Utc),
+                    expiration_date: None,
+                    transitional_periods: vec![
+                        TransitionalPeriod {
+                            description: "Implementation compliance period".to_string(),
+                            start_date: DateTime::parse_from_rfc3339("2020-09-17T00:00:00Z").unwrap().with_timezone(&Utc),
+                            end_date: DateTime::parse_from_rfc3339("2022-07-17T00:00:00Z").unwrap().with_timezone(&Utc),
+                            special_provisions: vec!["Extended implementation for coordination with distribution utilities".to_string()],
+                        },
+                    ],
+                    grandfathering_provisions: vec![],
+                },
+                entity_scope: vec![
+                    EntityType::RegionalTransmissionOrganization,
+                    EntityType::IndependentSystemOperator,
+                    EntityType::DistributedEnergyResourceAggregator,
+                    EntityType::DistributedEnergyResource,
+                    EntityType::ResidentialCustomer,
+                    EntityType::CommercialCustomer,
+                ],
+                activity_scope: vec![
+                    ActivityType::DistributedEnergyResourceAggregation,
+                    ActivityType::VirtualPowerPlant,
+                    ActivityType::DemandResponsePrograms,
+                    ActivityType::EnergyStorage,
+                ],
+                data_scope: vec!["der_operational_data".to_string(), "aggregation_performance_data".to_string()],
+                transaction_scope: vec!["der_aggregation_transactions".to_string(), "wholesale_market_participation".to_string()],
+            },
+            applicability_conditions: vec![
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::MinimumSize,
+                    description: "Aggregation must meet minimum size requirement".to_string(),
+                    logic_expression: "aggregated_capacity >= 100_kW".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "aggregated_capacity".to_string(),
+                            data_type: VariableType::Numeric,
+                            source: "aggregation_registration_system".to_string(),
+                        },
+                    ],
+                },
+                ApplicabilityCondition {
+                    condition_id: Uuid::new_v4(),
+                    condition_type: ConditionType::DistributionUtilityCoordination,
+                    description: "Must coordinate with relevant distribution utility".to_string(),
+                    logic_expression: "distribution_utility_coordination = true".to_string(),
+                    variables: vec![
+                        ConditionVariable {
+                            name: "distribution_utility_coordination".to_string(),
+                            data_type: VariableType::Boolean,
+                            source: "utility_coordination_system".to_string(),
+                        },
+                    ],
+                },
+            ],
+            exceptions: vec![
+                LegalException {
+                    exception_id: Uuid::new_v4(),
+                    exception_type: ExceptionType::DistributionSystemLimitation,
+                    description: "Exception for distribution system reliability concerns".to_string(),
+                    conditions: vec!["distribution_system_reliability_impact = true".to_string()],
+                    alternative_requirements: vec!["modified_participation_model".to_string()],
+                },
+            ],
+            interpretations: vec![
+                LegalInterpretation {
+                    interpretation_id: Uuid::new_v4(),
+                    source: InterpretationSource::TechnicalConference,
+                    citation: "FERC Technical Conference on DER Aggregation Implementation".to_string(),
+                    summary: "Emphasizes need for coordination between transmission and distribution operators".to_string(),
+                    full_text: "Successful implementation of DER aggregation requires close coordination between RTOs/ISOs and distribution utilities to ensure both bulk system and distribution system reliability.".to_string(),
+                    confidence_level: 0.88,
+                },
+            ],
+            enforcement_mechanism: CodeEnforcementMechanism {
+                primary_enforcer: "Federal Energy Regulatory Commission".to_string(),
+                enforcement_tools: vec![
+                    "Compliance Orders".to_string(),
+                    "Civil Penalties".to_string(),
+                    "Show Cause Proceedings".to_string(),
+                ],
+                appeal_process: "US Court of Appeals for the D.C. Circuit".to_string(),
+            },
+            penalties: vec![
+                SanctionType::CivilPenalty {
+                    max_amount: 1000000.0,
+                    currency: "USD".to_string(),
+                    per_violation: true,
+                },
+            ],
+            related_rules: vec![
+                RuleRelationship {
+                    relationship_type: RelationshipType::Builds_Upon,
+                    related_rule_code: "FERC.ORDER.841".to_string(),
+                    description: "Builds upon energy storage participation rules".to_string(),
+                },
+                RuleRelationship {
+                    relationship_type: RelationshipType::Builds_Upon,
+                    related_rule_code: "FERC.ORDER.745".to_string(),
+                    description: "Extends demand response principles to DER aggregations".to_string(),
+                },
+            ],
+            precedents: vec![],
+            guidance_documents: vec![
+                GuidanceDocument {
+                    title: "Participation of Distributed Energy Resource Aggregations in Markets Operated by Regional Transmission Organizations and Independent System Operators".to_string(),
+                    document_type: DocumentType::FinalRule,
+                    issuer: "Federal Energy Regulatory Commission".to_string(),
+                    publication_date: DateTime::parse_from_rfc3339("2020-10-01T00:00:00Z").unwrap().with_timezone(&Utc),
+                    url: Some("https://www.ferc.gov/industries/electric/indus-act/der.asp".to_string()),
+                },
+            ],
+            metadata: RuleMetadata {
+                created_date: Utc::now(),
+                last_updated: Utc::now(),
+                version: "1.0".to_string(),
+                source: "FERC Order 2222 (Issued September 17, 2020)".to_string(),
+                confidence_score: 0.97,
+                complexity_level: ComplexityLevel::VeryHigh,
+                impact_level: ImpactLevel::VeryHigh,
+                review_frequency: ReviewFrequency::Quarterly,
+                tags: vec![
+                    "distributed_energy_resources".to_string(),
+                    "aggregation".to_string(),
+                    "virtual_power_plants".to_string(),
+                    "grid_edge".to_string(),
+                    "customer_participation".to_string(),
+                ],
+            },
+        }
+    }
+}

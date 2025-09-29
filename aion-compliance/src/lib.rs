@@ -20,6 +20,10 @@ pub mod international_trade_customs_library;
 pub mod intellectual_property_library;
 pub mod connectors;
 pub mod dynamic_rules_engine;
+pub mod database_manager;
+pub mod migrations;
+pub mod llm_integration;
+pub mod predictive_analytics;
 
 pub use engine::*;
 pub use assessor::*;
@@ -43,3 +47,7 @@ pub use international_trade_customs_library::*;
 pub use intellectual_property_library::*;
 pub use connectors::*;
 pub use dynamic_rules_engine::*;
+pub use database_manager::*;
+pub use migrations::*;
+pub use llm_integration::*;
+pub use predictive_analytics::*;

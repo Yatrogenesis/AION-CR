@@ -531,20 +531,225 @@ pub struct QuestionLibrary {
     question_dependencies: HashMap<Uuid, Vec<Uuid>>,
 }
 
-pub struct ContextAnalyzer;
-pub struct ComplexityAssessor;
-pub struct QuizGenerator;
-pub struct ResponseAnalyzer;
+pub struct ContextAnalyzer {
+    knowledge_base: ContextKnowledgeBase,
+    nlp_processor: NLPProcessor,
+}
+
+pub struct ComplexityAssessor {
+    complexity_patterns: Vec<ComplexityPattern>,
+    threshold_calculator: ThresholdCalculator,
+}
+
+pub struct QuizGenerator {
+    question_templates: HashMap<InformationGapType, QuestionTemplate>,
+    adaptive_engine: AdaptiveQuestionEngine,
+}
+
+pub struct ResponseAnalyzer {
+    semantic_analyzer: SemanticAnalyzer,
+    confidence_calculator: ConfidenceCalculator,
+}
+
+// Supporting structures for functional implementations
+#[derive(Debug, Clone)]
+pub struct ContextKnowledgeBase {
+    legal_contexts: HashMap<String, LegalContextPattern>,
+    business_contexts: HashMap<String, BusinessContextPattern>,
+    technical_contexts: HashMap<String, TechnicalContextPattern>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LegalContextPattern {
+    pub keywords: Vec<String>,
+    pub implied_jurisdiction: Option<String>,
+    pub complexity_indicators: Vec<String>,
+    pub required_information: Vec<InformationGapType>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BusinessContextPattern {
+    pub sector_indicators: Vec<String>,
+    pub size_indicators: Vec<String>,
+    pub activity_indicators: Vec<String>,
+    pub risk_factors: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TechnicalContextPattern {
+    pub technology_keywords: Vec<String>,
+    pub data_processing_indicators: Vec<String>,
+    pub security_implications: Vec<String>,
+    pub compliance_requirements: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NLPProcessor {
+    tokenizer: TextTokenizer,
+    entity_extractor: EntityExtractor,
+    intent_classifier: IntentClassifier,
+}
+
+#[derive(Debug, Clone)]
+pub struct TextTokenizer {
+    stop_words: std::collections::HashSet<String>,
+    legal_terms: HashMap<String, LegalTerm>,
+}
+
+#[derive(Debug, Clone)]
+pub struct EntityExtractor {
+    entity_patterns: HashMap<String, regex::Regex>,
+    confidence_thresholds: HashMap<String, f32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct IntentClassifier {
+    intent_patterns: HashMap<String, IntentPattern>,
+    classification_model: ClassificationWeights,
+}
+
+#[derive(Debug, Clone)]
+pub struct LegalTerm {
+    pub term: String,
+    pub definition: String,
+    pub complexity_weight: f32,
+    pub jurisdictions: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct IntentPattern {
+    pub intent_type: String,
+    pub keywords: Vec<String>,
+    pub context_indicators: Vec<String>,
+    pub complexity_multiplier: f32,
+}
+
+#[derive(Debug, Clone)]
+pub struct ClassificationWeights {
+    pub feature_weights: HashMap<String, f32>,
+    pub bias: f32,
+}
+
+#[derive(Debug, Clone)]
+pub struct ComplexityPattern {
+    pub pattern_type: ComplexityPatternType,
+    pub indicators: Vec<String>,
+    pub weight: f32,
+    pub information_requirements: Vec<InformationGapType>,
+}
+
+#[derive(Debug, Clone)]
+pub enum ComplexityPatternType {
+    MultiJurisdictional,
+    CrossBorder,
+    DataPrivacy,
+    FinancialRegulation,
+    HealthcareCompliance,
+    TechnicalStandards,
+    EmergingTechnology,
+}
+
+#[derive(Debug, Clone)]
+pub struct ThresholdCalculator {
+    complexity_thresholds: HashMap<QueryComplexity, f32>,
+    gap_importance_weights: HashMap<GapImportance, f32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct QuestionTemplate {
+    pub template_id: String,
+    pub base_question: InteractiveQuestion,
+    pub variations: Vec<QuestionVariation>,
+    pub context_adaptations: Vec<ContextAdaptation>,
+}
+
+#[derive(Debug, Clone)]
+pub struct QuestionVariation {
+    pub variation_id: String,
+    pub condition: String,
+    pub modified_text: String,
+    pub modified_options: Option<ResponseOptions>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ContextAdaptation {
+    pub context_type: String,
+    pub adaptation_rules: Vec<AdaptationRule>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AdaptationRule {
+    pub condition: String,
+    pub action: AdaptationAction,
+}
+
+#[derive(Debug, Clone)]
+pub enum AdaptationAction {
+    ModifyQuestion(String),
+    AddOption(ChoiceOption),
+    ChangeImportance(QuestionImportance),
+    AddFollowUp(Uuid),
+}
+
+#[derive(Debug, Clone)]
+pub struct AdaptiveQuestionEngine {
+    flow_rules: Vec<FlowRule>,
+    priority_calculator: PriorityCalculator,
+}
+
+#[derive(Debug, Clone)]
+pub struct FlowRule {
+    pub condition: String,
+    pub next_question_logic: NextQuestionLogic,
+    pub skip_conditions: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub enum NextQuestionLogic {
+    Sequential,
+    PriorityBased,
+    ConditionalBranch(Vec<ConditionalBranch>),
+}
+
+#[derive(Debug, Clone)]
+pub struct ConditionalBranch {
+    pub condition: String,
+    pub next_questions: Vec<Uuid>,
+}
+
+#[derive(Debug, Clone)]
+pub struct PriorityCalculator {
+    importance_weights: HashMap<QuestionImportance, f32>,
+    context_modifiers: HashMap<String, f32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SemanticAnalyzer {
+    semantic_model: SemanticModel,
+    context_embeddings: HashMap<String, Vec<f32>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SemanticModel {
+    embedding_dimension: usize,
+    model_weights: Vec<Vec<f32>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConfidenceCalculator {
+    confidence_factors: HashMap<String, f32>,
+    uncertainty_penalties: HashMap<String, f32>,
+}
 
 impl InteractiveQueryEngine {
     pub fn new() -> Self {
         Self {
             session_store: HashMap::new(),
             question_library: QuestionLibrary::new(),
-            context_analyzer: ContextAnalyzer,
-            complexity_assessor: ComplexityAssessor,
-            quiz_generator: QuizGenerator,
-            response_analyzer: ResponseAnalyzer,
+            context_analyzer: ContextAnalyzer::new(),
+            complexity_assessor: ComplexityAssessor::new(),
+            quiz_generator: QuizGenerator::new(),
+            response_analyzer: ResponseAnalyzer::new(),
         }
     }
 
@@ -1018,77 +1223,704 @@ impl QuestionLibrary {
     }
 }
 
+// Functional implementations for all components
+impl ContextAnalyzer {
+    pub fn new() -> Self {
+        Self {
+            knowledge_base: ContextKnowledgeBase::new(),
+            nlp_processor: NLPProcessor::new(),
+        }
+    }
+
+    pub fn analyze_query_context(&self, query: &str) -> AionResult<ContextAnalysisResult> {
+        // Tokenize and process the query
+        let tokens = self.nlp_processor.tokenize(query)?;
+        let entities = self.nlp_processor.extract_entities(query)?;
+        let intent = self.nlp_processor.classify_intent(query)?;
+
+        // Analyze legal context
+        let legal_patterns = self.knowledge_base.match_legal_patterns(&tokens);
+        let business_patterns = self.knowledge_base.match_business_patterns(&tokens);
+        let technical_patterns = self.knowledge_base.match_technical_patterns(&tokens);
+
+        // Combine analysis results
+        let mut context_factors = Vec::new();
+        context_factors.extend(legal_patterns.iter().map(|p| p.keywords.join(", ")));
+        context_factors.extend(business_patterns.iter().map(|p| p.sector_indicators.join(", ")));
+
+        Ok(ContextAnalysisResult {
+            context_factors,
+            relevance_scores: HashMap::new(),
+            missing_information: self.identify_missing_context(&entities, &intent),
+        })
+    }
+
+    fn identify_missing_context(&self, entities: &[ExtractedEntity], intent: &QueryIntent) -> Vec<String> {
+        let mut missing = Vec::new();
+
+        if !entities.iter().any(|e| e.entity_type == "ORGANIZATION") {
+            missing.push("Entity type not specified".to_string());
+        }
+
+        if !entities.iter().any(|e| e.entity_type == "LOCATION") {
+            missing.push("Jurisdiction not specified".to_string());
+        }
+
+        if intent.confidence < 0.8 {
+            missing.push("Query intent unclear".to_string());
+        }
+
+        missing
+    }
+}
+
+impl ContextKnowledgeBase {
+    pub fn new() -> Self {
+        let mut legal_contexts = HashMap::new();
+        let mut business_contexts = HashMap::new();
+        let mut technical_contexts = HashMap::new();
+
+        // Initialize legal contexts
+        legal_contexts.insert("gdpr".to_string(), LegalContextPattern {
+            keywords: vec!["GDPR".to_string(), "personal data".to_string(), "data protection".to_string()],
+            implied_jurisdiction: Some("EU".to_string()),
+            complexity_indicators: vec!["cross-border".to_string(), "transfer".to_string()],
+            required_information: vec![InformationGapType::EntityType, InformationGapType::DataTypes],
+        });
+
+        legal_contexts.insert("hipaa".to_string(), LegalContextPattern {
+            keywords: vec!["HIPAA".to_string(), "healthcare".to_string(), "PHI".to_string()],
+            implied_jurisdiction: Some("US".to_string()),
+            complexity_indicators: vec!["covered entity".to_string(), "business associate".to_string()],
+            required_information: vec![InformationGapType::EntityType, InformationGapType::BusinessSector],
+        });
+
+        // Initialize business contexts
+        business_contexts.insert("fintech".to_string(), BusinessContextPattern {
+            sector_indicators: vec!["financial".to_string(), "banking".to_string(), "payment".to_string()],
+            size_indicators: vec!["startup".to_string(), "enterprise".to_string()],
+            activity_indicators: vec!["trading".to_string(), "lending".to_string()],
+            risk_factors: vec!["money laundering".to_string(), "fraud".to_string()],
+        });
+
+        // Initialize technical contexts
+        technical_contexts.insert("cloud".to_string(), TechnicalContextPattern {
+            technology_keywords: vec!["cloud".to_string(), "AWS".to_string(), "Azure".to_string()],
+            data_processing_indicators: vec!["storage".to_string(), "processing".to_string()],
+            security_implications: vec!["encryption".to_string(), "access control".to_string()],
+            compliance_requirements: vec!["SOC 2".to_string(), "ISO 27001".to_string()],
+        });
+
+        Self {
+            legal_contexts,
+            business_contexts,
+            technical_contexts,
+        }
+    }
+
+    pub fn match_legal_patterns(&self, tokens: &[String]) -> Vec<&LegalContextPattern> {
+        let mut matches = Vec::new();
+        for (_, pattern) in &self.legal_contexts {
+            if pattern.keywords.iter().any(|keyword| {
+                tokens.iter().any(|token| token.to_lowercase().contains(&keyword.to_lowercase()))
+            }) {
+                matches.push(pattern);
+            }
+        }
+        matches
+    }
+
+    pub fn match_business_patterns(&self, tokens: &[String]) -> Vec<&BusinessContextPattern> {
+        let mut matches = Vec::new();
+        for (_, pattern) in &self.business_contexts {
+            if pattern.sector_indicators.iter().any(|indicator| {
+                tokens.iter().any(|token| token.to_lowercase().contains(&indicator.to_lowercase()))
+            }) {
+                matches.push(pattern);
+            }
+        }
+        matches
+    }
+
+    pub fn match_technical_patterns(&self, tokens: &[String]) -> Vec<&TechnicalContextPattern> {
+        let mut matches = Vec::new();
+        for (_, pattern) in &self.technical_contexts {
+            if pattern.technology_keywords.iter().any(|keyword| {
+                tokens.iter().any(|token| token.to_lowercase().contains(&keyword.to_lowercase()))
+            }) {
+                matches.push(pattern);
+            }
+        }
+        matches
+    }
+}
+
+impl NLPProcessor {
+    pub fn new() -> Self {
+        Self {
+            tokenizer: TextTokenizer::new(),
+            entity_extractor: EntityExtractor::new(),
+            intent_classifier: IntentClassifier::new(),
+        }
+    }
+
+    pub fn tokenize(&self, text: &str) -> AionResult<Vec<String>> {
+        self.tokenizer.tokenize(text)
+    }
+
+    pub fn extract_entities(&self, text: &str) -> AionResult<Vec<ExtractedEntity>> {
+        self.entity_extractor.extract(text)
+    }
+
+    pub fn classify_intent(&self, text: &str) -> AionResult<QueryIntent> {
+        self.intent_classifier.classify(text)
+    }
+}
+
+impl TextTokenizer {
+    pub fn new() -> Self {
+        let mut stop_words = std::collections::HashSet::new();
+        stop_words.extend(vec![
+            "the".to_string(), "a".to_string(), "an".to_string(), "and".to_string(),
+            "or".to_string(), "but".to_string(), "in".to_string(), "on".to_string(),
+            "at".to_string(), "to".to_string(), "for".to_string(), "of".to_string(),
+            "with".to_string(), "by".to_string(), "is".to_string(), "are".to_string(),
+        ]);
+
+        let mut legal_terms = HashMap::new();
+        legal_terms.insert("gdpr".to_string(), LegalTerm {
+            term: "GDPR".to_string(),
+            definition: "General Data Protection Regulation".to_string(),
+            complexity_weight: 0.8,
+            jurisdictions: vec!["EU".to_string()],
+        });
+
+        Self {
+            stop_words,
+            legal_terms,
+        }
+    }
+
+    pub fn tokenize(&self, text: &str) -> AionResult<Vec<String>> {
+        let tokens: Vec<String> = text
+            .split_whitespace()
+            .map(|word| word.to_lowercase().trim_matches(|c: char| !c.is_alphanumeric()).to_string())
+            .filter(|word| !word.is_empty() && !self.stop_words.contains(word))
+            .collect();
+
+        Ok(tokens)
+    }
+}
+
+impl EntityExtractor {
+    pub fn new() -> Self {
+        let mut entity_patterns = HashMap::new();
+
+        // Add regex patterns for entity extraction
+        entity_patterns.insert("EMAIL".to_string(),
+            regex::Regex::new(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b").unwrap());
+        entity_patterns.insert("PHONE".to_string(),
+            regex::Regex::new(r"\b\d{3}-\d{3}-\d{4}\b").unwrap());
+        entity_patterns.insert("DATE".to_string(),
+            regex::Regex::new(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b").unwrap());
+
+        let mut confidence_thresholds = HashMap::new();
+        confidence_thresholds.insert("EMAIL".to_string(), 0.95);
+        confidence_thresholds.insert("PHONE".to_string(), 0.90);
+        confidence_thresholds.insert("DATE".to_string(), 0.85);
+
+        Self {
+            entity_patterns,
+            confidence_thresholds,
+        }
+    }
+
+    pub fn extract(&self, text: &str) -> AionResult<Vec<ExtractedEntity>> {
+        let mut entities = Vec::new();
+
+        // Extract pattern-based entities
+        for (entity_type, pattern) in &self.entity_patterns {
+            for mat in pattern.find_iter(text) {
+                entities.push(ExtractedEntity {
+                    entity_type: entity_type.clone(),
+                    entity_value: mat.as_str().to_string(),
+                    confidence: *self.confidence_thresholds.get(entity_type).unwrap_or(&0.5),
+                    start_pos: mat.start(),
+                    end_pos: mat.end(),
+                });
+            }
+        }
+
+        // Extract keyword-based entities
+        let keywords = vec![
+            ("ORGANIZATION", vec!["company", "corporation", "LLC", "Inc", "organization"]),
+            ("LOCATION", vec!["US", "EU", "California", "New York", "London"]),
+            ("REGULATION", vec!["GDPR", "HIPAA", "SOX", "PCI DSS"]),
+        ];
+
+        for (entity_type, keyword_list) in keywords {
+            for keyword in keyword_list {
+                if text.to_lowercase().contains(&keyword.to_lowercase()) {
+                    entities.push(ExtractedEntity {
+                        entity_type: entity_type.to_string(),
+                        entity_value: keyword.to_string(),
+                        confidence: 0.7,
+                        start_pos: 0,
+                        end_pos: 0,
+                    });
+                }
+            }
+        }
+
+        Ok(entities)
+    }
+}
+
+impl IntentClassifier {
+    pub fn new() -> Self {
+        let mut intent_patterns = HashMap::new();
+
+        intent_patterns.insert("COMPLIANCE_QUESTION".to_string(), IntentPattern {
+            intent_type: "COMPLIANCE_QUESTION".to_string(),
+            keywords: vec!["compliant".to_string(), "requirement".to_string(), "must".to_string()],
+            context_indicators: vec!["regulation".to_string(), "law".to_string()],
+            complexity_multiplier: 1.0,
+        });
+
+        intent_patterns.insert("RISK_ASSESSMENT".to_string(), IntentPattern {
+            intent_type: "RISK_ASSESSMENT".to_string(),
+            keywords: vec!["risk".to_string(), "vulnerable".to_string(), "assess".to_string()],
+            context_indicators: vec!["security".to_string(), "threat".to_string()],
+            complexity_multiplier: 1.2,
+        });
+
+        let classification_model = ClassificationWeights {
+            feature_weights: HashMap::from([
+                ("compliance".to_string(), 0.8),
+                ("risk".to_string(), 0.7),
+                ("requirement".to_string(), 0.6),
+            ]),
+            bias: 0.1,
+        };
+
+        Self {
+            intent_patterns,
+            classification_model,
+        }
+    }
+
+    pub fn classify(&self, text: &str) -> AionResult<QueryIntent> {
+        let text_lower = text.to_lowercase();
+        let mut best_intent = "GENERAL_QUESTION".to_string();
+        let mut best_score = 0.0;
+
+        for (intent_type, pattern) in &self.intent_patterns {
+            let mut score = 0.0;
+
+            // Score based on keywords
+            for keyword in &pattern.keywords {
+                if text_lower.contains(keyword) {
+                    score += 1.0;
+                }
+            }
+
+            // Score based on context indicators
+            for indicator in &pattern.context_indicators {
+                if text_lower.contains(indicator) {
+                    score += 0.5;
+                }
+            }
+
+            score *= pattern.complexity_multiplier;
+
+            if score > best_score {
+                best_score = score;
+                best_intent = intent_type.clone();
+            }
+        }
+
+        let confidence = (best_score / 5.0).min(1.0);
+
+        Ok(QueryIntent {
+            intent_type: best_intent,
+            confidence,
+            supporting_evidence: vec![format!("Score: {:.2}", best_score)],
+        })
+    }
+}
+
 impl ComplexityAssessor {
+    pub fn new() -> Self {
+        let complexity_patterns = vec![
+            ComplexityPattern {
+                pattern_type: ComplexityPatternType::MultiJurisdictional,
+                indicators: vec!["cross-border".to_string(), "international".to_string(), "multiple countries".to_string()],
+                weight: 2.0,
+                information_requirements: vec![InformationGapType::Jurisdiction, InformationGapType::GeographicScope],
+            },
+            ComplexityPattern {
+                pattern_type: ComplexityPatternType::DataPrivacy,
+                indicators: vec!["personal data".to_string(), "GDPR".to_string(), "privacy".to_string()],
+                weight: 1.5,
+                information_requirements: vec![InformationGapType::DataTypes, InformationGapType::EntityType],
+            },
+            ComplexityPattern {
+                pattern_type: ComplexityPatternType::FinancialRegulation,
+                indicators: vec!["financial".to_string(), "banking".to_string(), "securities".to_string()],
+                weight: 1.8,
+                information_requirements: vec![InformationGapType::BusinessSector, InformationGapType::TransactionVolume],
+            },
+        ];
+
+        let mut complexity_thresholds = HashMap::new();
+        complexity_thresholds.insert(QueryComplexity::Simple, 1.0);
+        complexity_thresholds.insert(QueryComplexity::Moderate, 3.0);
+        complexity_thresholds.insert(QueryComplexity::Complex, 6.0);
+        complexity_thresholds.insert(QueryComplexity::HighlyComplex, 10.0);
+
+        let mut gap_importance_weights = HashMap::new();
+        gap_importance_weights.insert(GapImportance::Critical, 3.0);
+        gap_importance_weights.insert(GapImportance::VeryImportant, 2.5);
+        gap_importance_weights.insert(GapImportance::Important, 2.0);
+        gap_importance_weights.insert(GapImportance::Helpful, 1.0);
+        gap_importance_weights.insert(GapImportance::Optional, 0.5);
+
+        Self {
+            complexity_patterns,
+            threshold_calculator: ThresholdCalculator {
+                complexity_thresholds,
+                gap_importance_weights,
+            },
+        }
+    }
+
     pub fn assess_initial_complexity(&self, query: &str) -> AionResult<ComplexityAssessment> {
-        // Analyze the query to determine complexity
+        let query_lower = query.to_lowercase();
+        let mut complexity_score = 0.0;
         let mut complexity_factors = Vec::new();
         let mut information_gaps = Vec::new();
-        let mut ambiguity_areas = Vec::new();
+        let mut required_info_types = std::collections::HashSet::new();
 
-        // Check for complexity indicators
-        if query.contains("GDPR") && query.contains("cross-border") {
-            complexity_factors.push(ComplexityFactor {
-                factor_type: ComplexityFactorType::MultipleJurisdictions,
-                description: "Cross-border GDPR compliance involves multiple jurisdictions".to_string(),
-                impact_level: ImpactLevel::High,
-                requires_clarification: true,
-            });
+        // Analyze complexity patterns
+        for pattern in &self.complexity_patterns {
+            let pattern_score = pattern.indicators.iter()
+                .map(|indicator| if query_lower.contains(indicator) { 1.0 } else { 0.0 })
+                .sum::<f32>();
+
+            if pattern_score > 0.0 {
+                complexity_score += pattern_score * pattern.weight;
+                complexity_factors.push(ComplexityFactor {
+                    factor_type: match pattern.pattern_type {
+                        ComplexityPatternType::MultiJurisdictional => ComplexityFactorType::MultipleJurisdictions,
+                        ComplexityPatternType::DataPrivacy => ComplexityFactorType::ContextDependent,
+                        ComplexityPatternType::FinancialRegulation => ComplexityFactorType::IndustrySpecific,
+                        _ => ComplexityFactorType::TechnicalComplexity,
+                    },
+                    description: format!("Detected {} complexity pattern",
+                        match pattern.pattern_type {
+                            ComplexityPatternType::MultiJurisdictional => "multi-jurisdictional",
+                            ComplexityPatternType::DataPrivacy => "data privacy",
+                            ComplexityPatternType::FinancialRegulation => "financial regulation",
+                            _ => "technical",
+                        }
+                    ),
+                    impact_level: if pattern.weight > 1.5 { ImpactLevel::High } else { ImpactLevel::Medium },
+                    requires_clarification: true,
+                });
+
+                required_info_types.extend(pattern.information_requirements.iter().cloned());
+            }
         }
 
-        // Check for information gaps
-        if !query.contains("company") && !query.contains("organization") {
-            information_gaps.push(InformationGap {
-                gap_type: InformationGapType::EntityType,
-                description: "Entity type not specified".to_string(),
-                importance: GapImportance::Critical,
-                collection_method: CollectionMethod::MultipleChoice,
-                default_assumption: None,
-            });
+        // Check for missing essential information
+        let essential_checks = vec![
+            (InformationGapType::EntityType, vec!["company", "organization", "entity"], GapImportance::Critical),
+            (InformationGapType::Jurisdiction, vec!["US", "EU", "California", "Germany"], GapImportance::VeryImportant),
+            (InformationGapType::BusinessSector, vec!["healthcare", "financial", "technology"], GapImportance::Important),
+        ];
+
+        for (gap_type, indicators, importance) in essential_checks {
+            if !indicators.iter().any(|indicator| query_lower.contains(&indicator.to_lowercase())) {
+                information_gaps.push(InformationGap {
+                    gap_type: gap_type.clone(),
+                    description: format!("{:?} not specified in query", gap_type),
+                    importance: importance.clone(),
+                    collection_method: match gap_type {
+                        InformationGapType::EntityType => CollectionMethod::MultipleChoice,
+                        InformationGapType::Jurisdiction => CollectionMethod::MultipleChoice,
+                        _ => CollectionMethod::DirectQuestion,
+                    },
+                    default_assumption: None,
+                });
+
+                complexity_score += self.threshold_calculator.gap_importance_weights
+                    .get(&importance).unwrap_or(&1.0);
+            }
         }
+
+        // Determine complexity level
+        let complexity_level = if complexity_score >= *self.threshold_calculator.complexity_thresholds.get(&QueryComplexity::HighlyComplex).unwrap_or(&10.0) {
+            QueryComplexity::HighlyComplex
+        } else if complexity_score >= *self.threshold_calculator.complexity_thresholds.get(&QueryComplexity::Complex).unwrap_or(&6.0) {
+            QueryComplexity::Complex
+        } else if complexity_score >= *self.threshold_calculator.complexity_thresholds.get(&QueryComplexity::Moderate).unwrap_or(&3.0) {
+            QueryComplexity::Moderate
+        } else {
+            QueryComplexity::Simple
+        };
 
         let refinement_needed = !information_gaps.is_empty() || complexity_factors.len() > 1;
 
         Ok(ComplexityAssessment {
-            initial_complexity: if complexity_factors.len() > 2 {
-                QueryComplexity::Complex
-            } else if complexity_factors.len() > 0 {
-                QueryComplexity::Moderate
-            } else {
-                QueryComplexity::Simple
-            },
+            initial_complexity: complexity_level,
             complexity_factors,
             information_gaps,
-            ambiguity_areas,
+            ambiguity_areas: Vec::new(), // Would be populated by more sophisticated analysis
             refinement_needed,
-            estimated_quiz_length: if refinement_needed { 5 } else { 0 },
+            estimated_quiz_length: if refinement_needed {
+                (information_gaps.len() + complexity_factors.len()).min(10) as u32
+            } else {
+                0
+            },
         })
     }
 }
 
 impl QuizGenerator {
+    pub fn new() -> Self {
+        Self {
+            question_templates: Self::initialize_question_templates(),
+            adaptive_engine: AdaptiveQuestionEngine::new(),
+        }
+    }
+
+    fn initialize_question_templates() -> HashMap<InformationGapType, QuestionTemplate> {
+        let mut templates = HashMap::new();
+
+        // Entity type question template
+        let entity_question = InteractiveQuestion {
+            question_id: Uuid::new_v4(),
+            question_type: QuestionType::SingleChoice,
+            title: "Entity Type".to_string(),
+            question_text: "What type of entity are you asking about?".to_string(),
+            help_text: Some("This helps us determine which legal frameworks apply to your situation.".to_string()),
+            examples: vec![
+                QuestionExample {
+                    example_text: "A software company would be a 'Private Company'".to_string(),
+                    correct_answer: Some("Private Company".to_string()),
+                    explanation: Some("Software companies are typically private commercial entities".to_string()),
+                },
+            ],
+            response_options: ResponseOptions::MultipleChoice {
+                options: vec![
+                    ChoiceOption {
+                        option_id: "private_company".to_string(),
+                        option_text: "Private Company".to_string(),
+                        description: Some("For-profit private corporation or LLC".to_string()),
+                        triggers_follow_up: true,
+                        follow_up_questions: Vec::new(),
+                        legal_implications: vec!["Subject to corporate law and commercial regulations".to_string()],
+                    },
+                    ChoiceOption {
+                        option_id: "public_company".to_string(),
+                        option_text: "Public Company".to_string(),
+                        description: Some("Publicly traded corporation".to_string()),
+                        triggers_follow_up: true,
+                        follow_up_questions: Vec::new(),
+                        legal_implications: vec!["Subject to securities regulations and enhanced disclosure requirements".to_string()],
+                    },
+                    ChoiceOption {
+                        option_id: "government".to_string(),
+                        option_text: "Government Entity".to_string(),
+                        description: Some("Federal, state, or local government organization".to_string()),
+                        triggers_follow_up: true,
+                        follow_up_questions: Vec::new(),
+                        legal_implications: vec!["Subject to public law and administrative procedures".to_string()],
+                    },
+                ],
+                allow_multiple: false,
+                allow_other: true,
+            },
+            validation_rules: vec![
+                ValidationRule {
+                    rule_type: ValidationRuleType::Required,
+                    expression: "answer IS NOT NULL".to_string(),
+                    error_message: "Please select an entity type".to_string(),
+                    warning_message: None,
+                },
+            ],
+            follow_up_trigger: None,
+            importance: QuestionImportance::Critical,
+            estimated_time: 30,
+        };
+
+        templates.insert(InformationGapType::EntityType, QuestionTemplate {
+            template_id: "entity_type_template".to_string(),
+            base_question: entity_question,
+            variations: Vec::new(),
+            context_adaptations: Vec::new(),
+        });
+
+        templates
+    }
+
     pub fn generate_initial_questions(&self, session: &InteractiveQuerySession) -> AionResult<Vec<InteractiveQuestion>> {
         let mut questions = Vec::new();
 
         // Generate questions based on information gaps
         for gap in &session.complexity_assessment.information_gaps {
-            match gap.gap_type {
-                InformationGapType::EntityType => {
-                    // Add entity type question from library
-                    // This would be retrieved from the question library
-                },
-                InformationGapType::Jurisdiction => {
-                    // Add jurisdiction question
-                },
-                InformationGapType::BusinessSector => {
-                    // Add business sector question
-                },
-                _ => {}
+            if let Some(template) = self.question_templates.get(&gap.gap_type) {
+                let mut question = template.base_question.clone();
+                question.question_id = Uuid::new_v4(); // Generate new ID for each instance
+
+                // Adapt question based on context
+                self.adapt_question_to_context(&mut question, session)?;
+
+                questions.push(question);
             }
         }
 
+        // Apply adaptive ordering
+        self.adaptive_engine.prioritize_questions(&mut questions, session)?;
+
         Ok(questions)
     }
+
+    fn adapt_question_to_context(&self, question: &mut InteractiveQuestion, session: &InteractiveQuerySession) -> AionResult<()> {
+        // Example adaptation based on complexity
+        if session.complexity_assessment.initial_complexity == QueryComplexity::HighlyComplex {
+            question.help_text = Some(format!(
+                "{} Given the complexity of your query, this information is especially important for providing accurate guidance.",
+                question.help_text.as_deref().unwrap_or("")
+            ));
+        }
+
+        Ok(())
+    }
 }
+
+impl AdaptiveQuestionEngine {
+    pub fn new() -> Self {
+        let flow_rules = vec![
+            FlowRule {
+                condition: "entity_type == 'private_company'".to_string(),
+                next_question_logic: NextQuestionLogic::PriorityBased,
+                skip_conditions: vec!["government_specific_questions".to_string()],
+            },
+        ];
+
+        let mut importance_weights = HashMap::new();
+        importance_weights.insert(QuestionImportance::Critical, 5.0);
+        importance_weights.insert(QuestionImportance::High, 4.0);
+        importance_weights.insert(QuestionImportance::Medium, 3.0);
+        importance_weights.insert(QuestionImportance::Low, 2.0);
+        importance_weights.insert(QuestionImportance::Conditional, 1.0);
+
+        Self {
+            flow_rules,
+            priority_calculator: PriorityCalculator {
+                importance_weights,
+                context_modifiers: HashMap::new(),
+            },
+        }
+    }
+
+    pub fn prioritize_questions(&self, questions: &mut Vec<InteractiveQuestion>, session: &InteractiveQuerySession) -> AionResult<()> {
+        // Sort questions by calculated priority
+        questions.sort_by(|a, b| {
+            let priority_a = self.calculate_question_priority(a, session);
+            let priority_b = self.calculate_question_priority(b, session);
+            priority_b.partial_cmp(&priority_a).unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        Ok(())
+    }
+
+    fn calculate_question_priority(&self, question: &InteractiveQuestion, session: &InteractiveQuerySession) -> f32 {
+        let base_priority = self.priority_calculator.importance_weights
+            .get(&question.importance)
+            .unwrap_or(&1.0);
+
+        // Adjust based on context
+        let mut adjusted_priority = *base_priority;
+
+        // Increase priority for questions that address identified complexity factors
+        for factor in &session.complexity_assessment.complexity_factors {
+            if factor.requires_clarification {
+                adjusted_priority += 1.0;
+            }
+        }
+
+        adjusted_priority
+    }
+}
+
+impl ResponseAnalyzer {
+    pub fn new() -> Self {
+        Self {
+            semantic_analyzer: SemanticAnalyzer::new(),
+            confidence_calculator: ConfidenceCalculator::new(),
+        }
+    }
+}
+
+impl SemanticAnalyzer {
+    pub fn new() -> Self {
+        Self {
+            semantic_model: SemanticModel {
+                embedding_dimension: 300,
+                model_weights: vec![vec![0.0; 300]; 1000], // Simplified model
+            },
+            context_embeddings: HashMap::new(),
+        }
+    }
+}
+
+impl ConfidenceCalculator {
+    pub fn new() -> Self {
+        let mut confidence_factors = HashMap::new();
+        confidence_factors.insert("information_completeness".to_string(), 0.4);
+        confidence_factors.insert("complexity_assessment".to_string(), 0.3);
+        confidence_factors.insert("precedent_availability".to_string(), 0.2);
+        confidence_factors.insert("regulatory_clarity".to_string(), 0.1);
+
+        let mut uncertainty_penalties = HashMap::new();
+        uncertainty_penalties.insert("missing_critical_info".to_string(), 0.3);
+        uncertainty_penalties.insert("conflicting_rules".to_string(), 0.2);
+        uncertainty_penalties.insert("novel_situation".to_string(), 0.15);
+
+        Self {
+            confidence_factors,
+            uncertainty_penalties,
+        }
+    }
+}
+
+// Additional supporting structures
+#[derive(Debug, Clone)]
+pub struct ContextAnalysisResult {
+    pub context_factors: Vec<String>,
+    pub relevance_scores: HashMap<String, f32>,
+    pub missing_information: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExtractedEntity {
+    pub entity_type: String,
+    pub entity_value: String,
+    pub confidence: f32,
+    pub start_pos: usize,
+    pub end_pos: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct QueryIntent {
+    pub intent_type: String,
+    pub confidence: f32,
+    pub supporting_evidence: Vec<String>,
+}
+
+// End of interactive query system implementation
 
 // Supporting data structures for responses
 #[derive(Debug, Clone, Serialize, Deserialize)]
