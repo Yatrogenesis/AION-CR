@@ -1,0 +1,446 @@
+name: AION-CR CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, develop, feature/* ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ master, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  AION_VERSION: ${{ github.ref_name }}
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable, beta, nightly]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+        components: rustfmt, clippy
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install system dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev pkg-config build-essential
+        sudo apt-get install -y postgresql-client redis-tools
+        sudo apt-get install -y python3 python3-pip
+        pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install system dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install openssl
+        choco install postgresql
+        choco install redis
+        pip install torch torchvision torchaudio
+
+    - name: Install system dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install openssl pkg-config
+        brew install postgresql redis
+        pip3 install torch torchvision torchaudio
+
+    - name: Format check
+      run: cargo fmt -- --check
+
+    - name: Lint check
+      run: cargo clippy -- -D warnings
+
+    - name: Security audit
+      run: |
+        cargo install cargo-audit
+        cargo audit
+
+    - name: Run unit tests
+      run: cargo test --verbose --all-features
+
+    - name: Run integration tests
+      run: cargo test --test integration --all-features
+
+    - name: Run benchmarks
+      if: matrix.rust == 'nightly'
+      run: cargo bench --all-features
+
+    - name: Test ML/NLP engines
+      run: cargo test --package aion-nlp --all-features
+
+    - name: Test compliance engines
+      run: cargo test --package aion-compliance --all-features
+
+    - name: Test conflict resolution
+      run: cargo test --package aion-conflict --all-features
+
+    - name: Code coverage
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      run: |
+        cargo install cargo-tarpaulin
+        cargo tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml
+
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./cobertura.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  build:
+    name: Build Binaries
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary-suffix: ""
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            binary-suffix: ""
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary-suffix: ".exe"
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            binary-suffix: ".exe"
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary-suffix: ""
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary-suffix: ""
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+        override: true
+
+    - name: Install cross-compilation tools
+      if: matrix.target == 'aarch64-unknown-linux-gnu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu
+
+    - name: Build release binary
+      run: cargo build --release --target ${{ matrix.target }} --all-features
+
+    - name: Create installer (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir installer
+        copy target\${{ matrix.target }}\release\aion-cr${{ matrix.binary-suffix }} installer\
+        copy target\${{ matrix.target }}\release\aion-server${{ matrix.binary-suffix }} installer\
+        copy README.md installer\
+        copy LICENSE installer\
+        powershell Compress-Archive -Path installer\* -DestinationPath aion-cr-${{ matrix.target }}.zip
+
+    - name: Create installer (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        mkdir -p installer/bin
+        cp target/${{ matrix.target }}/release/aion-cr installer/bin/
+        cp target/${{ matrix.target }}/release/aion-server installer/bin/
+        cp README.md installer/
+        cp LICENSE installer/
+        tar -czf aion-cr-${{ matrix.target }}.tar.gz -C installer .
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: aion-cr-${{ matrix.target }}
+        path: |
+          aion-cr-${{ matrix.target }}.zip
+          aion-cr-${{ matrix.target }}.tar.gz
+
+  docker:
+    name: Build Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Log in to GitHub Container Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          aion-cr/aion-cr
+          ghcr.io/${{ github.repository }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Semgrep
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/rust
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [test, build, docker]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
+    - name: Deploy to EKS staging
+      run: |
+        aws eks update-kubeconfig --name aion-staging-cluster
+        kubectl set image deployment/aion-cr aion-cr=ghcr.io/${{ github.repository }}:develop
+        kubectl rollout status deployment/aion-cr
+
+    - name: Run smoke tests
+      run: |
+        kubectl port-forward service/aion-cr 8080:80 &
+        sleep 10
+        curl -f http://localhost:8080/health || exit 1
+        curl -f http://localhost:8080/api/v1/status || exit 1
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [test, build, docker]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
+    - name: Deploy to EKS production
+      run: |
+        aws eks update-kubeconfig --name aion-production-cluster
+        kubectl set image deployment/aion-cr aion-cr=ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+        kubectl rollout status deployment/aion-cr
+
+    - name: Run production smoke tests
+      run: |
+        kubectl port-forward service/aion-cr 8080:80 &
+        sleep 10
+        curl -f http://localhost:8080/health || exit 1
+        curl -f http://localhost:8080/api/v1/status || exit 1
+
+  release:
+    name: Create Release
+    needs: [test, build, docker]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        echo "## Changes" >> CHANGELOG.md
+        git log --oneline --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> CHANGELOG.md
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: AION-CR ${{ github.ref_name }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
+
+    - name: Upload release assets
+      run: |
+        for file in aion-cr-*/aion-cr-*; do
+          gh release upload ${{ github.ref_name }} "$file"
+        done
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  performance:
+    name: Performance Tests
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+
+    - name: Run benchmarks
+      run: |
+        cargo bench --all-features | tee benchmark_results.txt
+
+    - name: Performance regression check
+      run: |
+        # Compare with previous benchmarks
+        python3 scripts/performance_check.py benchmark_results.txt
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results
+        path: benchmark_results.txt
+
+  documentation:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Build documentation
+      run: |
+        cargo doc --all-features --no-deps
+        echo '<meta http-equiv="refresh" content="0; url=aion_core">' > target/doc/index.html
+
+    - name: Deploy documentation
+      if: github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./target/doc
+        destination_dir: docs
+
+  notify:
+    name: Notify Teams
+    needs: [deploy-production, release]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Notify Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#aion-deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+    - name: Notify Microsoft Teams
+      uses: aliencube/microsoft-teams-actions@v0.8.0
+      with:
+        webhook_uri: ${{ secrets.TEAMS_WEBHOOK }}
+        title: AION-CR Deployment
+        summary: Deployment completed with status ${{ job.status }}

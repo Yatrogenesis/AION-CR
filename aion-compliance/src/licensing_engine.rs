@@ -863,8 +863,58 @@ impl DynamicLicensingEngine {
         sector_req: &[String],
         extraterritorial_req: &[ExtraterritorialRequirement],
     ) -> AionResult<ComplianceLicense> {
-        // Implementation would build the optimal license based on requirements
-        todo!("Implement optimal license building")
+        // Build optimal license based on comprehensive analysis
+        let mut requirements = Vec::new();
+        let mut components = Vec::new();
+
+        // Analyze geographic requirements
+        for jurisdiction in geographic_req {
+            let jurisdiction_reqs = self.get_jurisdiction_requirements(jurisdiction)?;
+            requirements.extend(jurisdiction_reqs);
+        }
+
+        // Analyze sector-specific requirements
+        for sector in sector_req {
+            let sector_reqs = self.get_sector_requirements(sector)?;
+            requirements.extend(sector_reqs);
+        }
+
+        // Handle extraterritorial requirements
+        for extraterritorial in extraterritorial_req {
+            let extraterritorial_reqs = self.get_extraterritorial_requirements(extraterritorial)?;
+            requirements.extend(extraterritorial_reqs);
+        }
+
+        // Analyze business profile for specific requirements
+        let profile_reqs = self.analyze_business_profile_requirements(profile)?;
+        requirements.extend(profile_reqs);
+
+        // Build license components based on requirements
+        for requirement in &requirements {
+            let component = self.build_license_component(requirement)?;
+            components.push(component);
+        }
+
+        // Optimize and consolidate components
+        let optimized_components = self.optimize_license_components(components)?;
+
+        // Generate license metadata
+        let metadata = self.generate_license_metadata(profile, geographic_req, sector_req)?;
+
+        Ok(ComplianceLicense {
+            license_id: Uuid::new_v4(),
+            business_profile: profile.clone(),
+            components: optimized_components,
+            applicable_jurisdictions: geographic_req.to_vec(),
+            sector_requirements: sector_req.to_vec(),
+            extraterritorial_scope: extraterritorial_req.to_vec(),
+            validity_period: self.calculate_validity_period(&requirements),
+            compliance_score: self.calculate_compliance_score(&requirements),
+            risk_assessment: self.perform_risk_assessment(profile, &requirements)?,
+            maintenance_requirements: self.determine_maintenance_requirements(&requirements),
+            renewal_triggers: self.identify_renewal_triggers(&requirements),
+            metadata,
+        })
     }
 
     fn generate_justification(&self, profile: &BusinessProfile) -> AionResult<String> {

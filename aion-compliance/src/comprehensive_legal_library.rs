@@ -1622,12 +1622,78 @@ impl ComprehensiveLegalLibrary {
             resolution_framework: Vec::new(),
         })
     }
-    fn create_uk_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
-    fn create_japan_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
-    fn create_china_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
-    fn create_switzerland_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
-    fn create_singapore_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
-    fn create_hong_kong_banking_law(&self) -> AionResult<NationalBankingLaw> { todo!() }
+    fn create_uk_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            jurisdiction: "United Kingdom".to_string(),
+            primary_act: "Financial Services and Markets Act 2000".to_string(),
+            supervisory_authority: "Financial Conduct Authority (FCA) and Prudential Regulation Authority (PRA)".to_string(),
+            licensing_requirements: self.create_uk_banking_licensing_rules()?,
+            capital_requirements: self.create_uk_capital_requirements()?,
+            governance_requirements: self.create_uk_banking_governance_rules()?,
+            consumer_protection: self.create_uk_banking_consumer_protection()?,
+            resolution_framework: self.create_uk_banking_resolution_rules()?,
+        })
+    }
+    fn create_japan_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            jurisdiction: "Japan".to_string(),
+            primary_act: "Banking Act of Japan".to_string(),
+            supervisory_authority: "Financial Services Agency (FSA)".to_string(),
+            licensing_requirements: self.create_japan_banking_licensing_rules()?,
+            capital_requirements: self.create_japan_capital_requirements()?,
+            governance_requirements: self.create_japan_banking_governance_rules()?,
+            consumer_protection: self.create_japan_banking_consumer_protection()?,
+            resolution_framework: self.create_japan_banking_resolution_rules()?,
+        })
+    }
+    fn create_china_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            jurisdiction: "People's Republic of China".to_string(),
+            primary_act: "Commercial Banking Law of the People's Republic of China".to_string(),
+            supervisory_authority: "China Banking and Insurance Regulatory Commission (CBIRC)".to_string(),
+            licensing_requirements: self.create_china_banking_licensing_rules()?,
+            capital_requirements: self.create_china_capital_requirements()?,
+            governance_requirements: self.create_china_banking_governance_rules()?,
+            consumer_protection: self.create_china_banking_consumer_protection()?,
+            resolution_framework: self.create_china_banking_resolution_rules()?,
+        })
+    }
+    fn create_switzerland_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            jurisdiction: "Switzerland".to_string(),
+            primary_act: "Federal Act on Banks and Savings Banks (Banking Act)".to_string(),
+            supervisory_authority: "Swiss Financial Market Supervisory Authority (FINMA)".to_string(),
+            licensing_requirements: self.create_switzerland_banking_licensing_rules()?,
+            capital_requirements: self.create_switzerland_capital_requirements()?,
+            governance_requirements: self.create_switzerland_banking_governance_rules()?,
+            consumer_protection: self.create_switzerland_banking_consumer_protection()?,
+            resolution_framework: self.create_switzerland_banking_resolution_rules()?,
+        })
+    }
+    fn create_singapore_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            jurisdiction: "Singapore".to_string(),
+            primary_act: "Banking Act (Chapter 19)".to_string(),
+            supervisory_authority: "Monetary Authority of Singapore (MAS)".to_string(),
+            licensing_requirements: self.create_singapore_banking_licensing_rules()?,
+            capital_requirements: self.create_singapore_capital_requirements()?,
+            governance_requirements: self.create_singapore_banking_governance_rules()?,
+            consumer_protection: self.create_singapore_banking_consumer_protection()?,
+            resolution_framework: self.create_singapore_banking_resolution_rules()?,
+        })
+    }
+    fn create_hong_kong_banking_law(&self) -> AionResult<NationalBankingLaw> {
+        Ok(NationalBankingLaw {
+            jurisdiction: "Hong Kong SAR".to_string(),
+            primary_act: "Banking Ordinance (Chapter 155)".to_string(),
+            supervisory_authority: "Hong Kong Monetary Authority (HKMA)".to_string(),
+            licensing_requirements: self.create_hong_kong_banking_licensing_rules()?,
+            capital_requirements: self.create_hong_kong_capital_requirements()?,
+            governance_requirements: self.create_hong_kong_banking_governance_rules()?,
+            consumer_protection: self.create_hong_kong_banking_consumer_protection()?,
+            resolution_framework: self.create_hong_kong_banking_resolution_rules()?,
+        })
+    }
     fn create_us_banking_licensing_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_us_capital_requirements(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
     fn create_us_banking_governance_rules(&self) -> AionResult<Vec<AtomicLegalRule>> { Ok(Vec::new()) }
@@ -1750,11 +1816,116 @@ impl ComprehensiveLegalLibrary {
             enforcement_mechanisms: Vec::new(),
         })
     }
-    fn create_eu_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
-    fn create_uk_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
-    fn create_japan_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
-    fn create_canada_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
-    fn create_australia_securities_regulation(&self) -> AionResult<SecuritiesAct> { todo!() }
+    fn create_eu_securities_regulation(&self) -> AionResult<SecuritiesAct> {
+        Ok(SecuritiesAct {
+            jurisdiction: "European Union".to_string(),
+            primary_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "EU.MIFID2.ART.9".to_string(),
+                hierarchy_path: vec!["European Union", "MiFID II", "Article 9"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "Investment firms shall comply with the organizational requirements to ensure proper conduct of business and risk management.".to_string(),
+                plain_language: "Investment firms must have proper organization and risk management systems.".to_string(),
+                scope: self.create_eu_securities_scope(),
+                applicability_conditions: self.create_eu_securities_conditions(),
+                exceptions: self.create_eu_securities_exceptions(),
+                requirements: self.create_eu_securities_requirements(),
+                enforcement: self.create_eu_securities_enforcement(),
+                metadata: self.create_eu_securities_metadata(),
+            },
+            disclosure_requirements: self.create_eu_disclosure_requirements()?,
+            market_conduct_rules: self.create_eu_market_conduct_rules()?,
+            investor_protection: self.create_eu_investor_protection()?,
+            market_structure: self.create_eu_market_structure()?,
+        })
+    }
+    fn create_uk_securities_regulation(&self) -> AionResult<SecuritiesAct> {
+        Ok(SecuritiesAct {
+            jurisdiction: "United Kingdom".to_string(),
+            primary_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "UK.FSMA.S397".to_string(),
+                hierarchy_path: vec!["United Kingdom", "FSMA 2000", "Section 397"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "No person shall make a statement, promise or forecast which he knows to be misleading, false or deceptive in a material particular.".to_string(),
+                plain_language: "You cannot make misleading statements about investments.".to_string(),
+                scope: self.create_uk_securities_scope(),
+                applicability_conditions: self.create_uk_securities_conditions(),
+                exceptions: self.create_uk_securities_exceptions(),
+                requirements: self.create_uk_securities_requirements(),
+                enforcement: self.create_uk_securities_enforcement(),
+                metadata: self.create_uk_securities_metadata(),
+            },
+            disclosure_requirements: self.create_uk_disclosure_requirements()?,
+            market_conduct_rules: self.create_uk_market_conduct_rules()?,
+            investor_protection: self.create_uk_investor_protection()?,
+            market_structure: self.create_uk_market_structure()?,
+        })
+    }
+    fn create_japan_securities_regulation(&self) -> AionResult<SecuritiesAct> {
+        Ok(SecuritiesAct {
+            jurisdiction: "Japan".to_string(),
+            primary_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "JP.FIEA.ART.27-3".to_string(),
+                hierarchy_path: vec!["Japan", "Financial Instruments and Exchange Act", "Article 27-3"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "A person who intends to engage in Type I Financial Instruments Business shall obtain registration from the Prime Minister.".to_string(),
+                plain_language: "You need registration to engage in securities business in Japan.".to_string(),
+                scope: self.create_japan_securities_scope(),
+                applicability_conditions: self.create_japan_securities_conditions(),
+                exceptions: self.create_japan_securities_exceptions(),
+                requirements: self.create_japan_securities_requirements(),
+                enforcement: self.create_japan_securities_enforcement(),
+                metadata: self.create_japan_securities_metadata(),
+            },
+            disclosure_requirements: self.create_japan_disclosure_requirements()?,
+            market_conduct_rules: self.create_japan_market_conduct_rules()?,
+            investor_protection: self.create_japan_investor_protection()?,
+            market_structure: self.create_japan_market_structure()?,
+        })
+    }
+    fn create_canada_securities_regulation(&self) -> AionResult<SecuritiesAct> {
+        Ok(SecuritiesAct {
+            jurisdiction: "Canada".to_string(),
+            primary_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "CA.OSA.S53".to_string(),
+                hierarchy_path: vec!["Canada", "Ontario Securities Act", "Section 53"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "No person or company shall, directly or indirectly, engage in or carry on business as a dealer in a security without being registered as a dealer.".to_string(),
+                plain_language: "You must be registered to carry on business as a securities dealer.".to_string(),
+                scope: self.create_canada_securities_scope(),
+                applicability_conditions: self.create_canada_securities_conditions(),
+                exceptions: self.create_canada_securities_exceptions(),
+                requirements: self.create_canada_securities_requirements(),
+                enforcement: self.create_canada_securities_enforcement(),
+                metadata: self.create_canada_securities_metadata(),
+            },
+            disclosure_requirements: self.create_canada_disclosure_requirements()?,
+            market_conduct_rules: self.create_canada_market_conduct_rules()?,
+            investor_protection: self.create_canada_investor_protection()?,
+            market_structure: self.create_canada_market_structure()?,
+        })
+    }
+    fn create_australia_securities_regulation(&self) -> AionResult<SecuritiesAct> {
+        Ok(SecuritiesAct {
+            jurisdiction: "Australia".to_string(),
+            primary_act: AtomicLegalRule {
+                id: Uuid::new_v4(),
+                rule_code: "AU.CORPS.S911A".to_string(),
+                hierarchy_path: vec!["Australia", "Corporations Act 2001", "Section 911A"].into_iter().map(|s| s.to_string()).collect(),
+                rule_text: "A person must not carry on a financial services business in this jurisdiction unless the person holds an Australian financial services licence covering the provision of the financial service.".to_string(),
+                plain_language: "You need an AFSL to provide financial services in Australia.".to_string(),
+                scope: self.create_australia_securities_scope(),
+                applicability_conditions: self.create_australia_securities_conditions(),
+                exceptions: self.create_australia_securities_exceptions(),
+                requirements: self.create_australia_securities_requirements(),
+                enforcement: self.create_australia_securities_enforcement(),
+                metadata: self.create_australia_securities_metadata(),
+            },
+            disclosure_requirements: self.create_australia_disclosure_requirements()?,
+            market_conduct_rules: self.create_australia_market_conduct_rules()?,
+            investor_protection: self.create_australia_investor_protection()?,
+            market_structure: self.create_australia_market_structure()?,
+        })
+    }
     fn create_hipaa_law(&self) -> AionResult<HealthPrivacyLaw> {
         Ok(HealthPrivacyLaw {
             jurisdiction: "United States".to_string(),
@@ -1877,8 +2048,32 @@ impl ComprehensiveLegalLibrary {
             enforcement_mechanisms: Vec::new(),
         })
     }
-    fn create_eu_health_data_regulation(&self) -> AionResult<HealthPrivacyLaw> { todo!() }
-    fn create_canada_health_privacy_law(&self) -> AionResult<HealthPrivacyLaw> { todo!() }
+    fn create_eu_health_data_regulation(&self) -> AionResult<HealthPrivacyLaw> {
+        Ok(HealthPrivacyLaw {
+            jurisdiction: "European Union".to_string(),
+            primary_act: "General Data Protection Regulation (GDPR) Article 9".to_string(),
+            health_data_definition: "Personal data concerning health which reveal information about the physical or mental health of a natural person.".to_string(),
+            consent_requirements: self.create_eu_health_consent_requirements()?,
+            data_subject_rights: self.create_eu_health_data_subject_rights()?,
+            controller_obligations: self.create_eu_health_controller_obligations()?,
+            processor_obligations: self.create_eu_health_processor_obligations()?,
+            cross_border_transfers: self.create_eu_health_cross_border_transfers()?,
+            enforcement_mechanisms: self.create_eu_health_enforcement()?,
+        })
+    }
+    fn create_canada_health_privacy_law(&self) -> AionResult<HealthPrivacyLaw> {
+        Ok(HealthPrivacyLaw {
+            jurisdiction: "Canada".to_string(),
+            primary_act: "Personal Information Protection and Electronic Documents Act (PIPEDA)".to_string(),
+            health_data_definition: "Personal health information relating to the physical or mental health of an individual.".to_string(),
+            consent_requirements: self.create_canada_health_consent_requirements()?,
+            data_subject_rights: self.create_canada_health_data_subject_rights()?,
+            controller_obligations: self.create_canada_health_controller_obligations()?,
+            processor_obligations: self.create_canada_health_processor_obligations()?,
+            cross_border_transfers: self.create_canada_health_cross_border_transfers()?,
+            enforcement_mechanisms: self.create_canada_health_enforcement()?,
+        })
+    }
     fn create_fda_approval_process(&self) -> AionResult<DrugApprovalProcess> {
         Ok(DrugApprovalProcess {
             jurisdiction: "United States".to_string(),
@@ -1995,9 +2190,45 @@ impl ComprehensiveLegalLibrary {
             post_market_surveillance: Vec::new(),
         })
     }
-    fn create_ema_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
-    fn create_pmda_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
-    fn create_health_canada_approval_process(&self) -> AionResult<DrugApprovalProcess> { todo!() }
+    fn create_ema_approval_process(&self) -> AionResult<DrugApprovalProcess> {
+        Ok(DrugApprovalProcess {
+            jurisdiction: "European Union".to_string(),
+            regulatory_authority: "European Medicines Agency (EMA)".to_string(),
+            approval_pathway: "Centralized Procedure".to_string(),
+            clinical_trial_requirements: self.create_ema_clinical_trial_requirements()?,
+            manufacturing_standards: self.create_ema_manufacturing_standards()?,
+            labeling_requirements: self.create_ema_labeling_requirements()?,
+            post_market_surveillance: self.create_ema_post_market_surveillance()?,
+            approval_timeline: "210 days (standard), 150 days (accelerated)".to_string(),
+            fees_structure: self.create_ema_fees_structure(),
+        })
+    }
+    fn create_pmda_approval_process(&self) -> AionResult<DrugApprovalProcess> {
+        Ok(DrugApprovalProcess {
+            jurisdiction: "Japan".to_string(),
+            regulatory_authority: "Pharmaceuticals and Medical Devices Agency (PMDA)".to_string(),
+            approval_pathway: "J-NDA (New Drug Application)".to_string(),
+            clinical_trial_requirements: self.create_pmda_clinical_trial_requirements()?,
+            manufacturing_standards: self.create_pmda_manufacturing_standards()?,
+            labeling_requirements: self.create_pmda_labeling_requirements()?,
+            post_market_surveillance: self.create_pmda_post_market_surveillance()?,
+            approval_timeline: "12 months (standard), 6 months (priority)".to_string(),
+            fees_structure: self.create_pmda_fees_structure(),
+        })
+    }
+    fn create_health_canada_approval_process(&self) -> AionResult<DrugApprovalProcess> {
+        Ok(DrugApprovalProcess {
+            jurisdiction: "Canada".to_string(),
+            regulatory_authority: "Health Canada".to_string(),
+            approval_pathway: "New Drug Submission (NDS)".to_string(),
+            clinical_trial_requirements: self.create_health_canada_clinical_trial_requirements()?,
+            manufacturing_standards: self.create_health_canada_manufacturing_standards()?,
+            labeling_requirements: self.create_health_canada_labeling_requirements()?,
+            post_market_surveillance: self.create_health_canada_post_market_surveillance()?,
+            approval_timeline: "300 days (standard), 180 days (priority)".to_string(),
+            fees_structure: self.create_health_canada_fees_structure(),
+        })
+    }
     fn create_gdpr_regulation(&self) -> AionResult<GeneralDataProtectionLaw> {
         Ok(GeneralDataProtectionLaw {
             jurisdiction: "European Union".to_string(),
@@ -2108,9 +2339,57 @@ impl ComprehensiveLegalLibrary {
             enforcement_procedures: Vec::new(),
         })
     }
-    fn create_ccpa_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
-    fn create_lgpd_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
-    fn create_pipeda_regulation(&self) -> AionResult<GeneralDataProtectionLaw> { todo!() }
+    fn create_ccpa_regulation(&self) -> AionResult<GeneralDataProtectionLaw> {
+        Ok(GeneralDataProtectionLaw {
+            jurisdiction: "California, United States".to_string(),
+            primary_act: "California Consumer Privacy Act (CCPA)".to_string(),
+            territorial_scope: "California residents and businesses meeting threshold criteria".to_string(),
+            personal_data_definition: "Information that identifies, relates to, describes, is reasonably capable of being associated with, or could reasonably be linked with a particular consumer or household.".to_string(),
+            data_subject_rights: self.create_ccpa_data_subject_rights()?,
+            controller_obligations: self.create_ccpa_controller_obligations()?,
+            processor_obligations: self.create_ccpa_processor_obligations()?,
+            lawful_basis_framework: self.create_ccpa_lawful_basis_framework(),
+            consent_requirements: self.create_ccpa_consent_requirements()?,
+            cross_border_transfers: self.create_ccpa_cross_border_transfers()?,
+            breach_notification: self.create_ccpa_breach_notification()?,
+            enforcement_mechanisms: self.create_ccpa_enforcement()?,
+            penalties: self.create_ccpa_penalties(),
+        })
+    }
+    fn create_lgpd_regulation(&self) -> AionResult<GeneralDataProtectionLaw> {
+        Ok(GeneralDataProtectionLaw {
+            jurisdiction: "Brazil".to_string(),
+            primary_act: "Lei Geral de Proteção de Dados (LGPD)".to_string(),
+            territorial_scope: "Brazil and processing of Brazilian residents' data".to_string(),
+            personal_data_definition: "Information related to identified or identifiable natural person.".to_string(),
+            data_subject_rights: self.create_lgpd_data_subject_rights()?,
+            controller_obligations: self.create_lgpd_controller_obligations()?,
+            processor_obligations: self.create_lgpd_processor_obligations()?,
+            lawful_basis_framework: self.create_lgpd_lawful_basis_framework(),
+            consent_requirements: self.create_lgpd_consent_requirements()?,
+            cross_border_transfers: self.create_lgpd_cross_border_transfers()?,
+            breach_notification: self.create_lgpd_breach_notification()?,
+            enforcement_mechanisms: self.create_lgpd_enforcement()?,
+            penalties: self.create_lgpd_penalties(),
+        })
+    }
+    fn create_pipeda_regulation(&self) -> AionResult<GeneralDataProtectionLaw> {
+        Ok(GeneralDataProtectionLaw {
+            jurisdiction: "Canada".to_string(),
+            primary_act: "Personal Information Protection and Electronic Documents Act (PIPEDA)".to_string(),
+            territorial_scope: "Canada and cross-border commercial activities".to_string(),
+            personal_data_definition: "Information about an identifiable individual.".to_string(),
+            data_subject_rights: self.create_pipeda_data_subject_rights()?,
+            controller_obligations: self.create_pipeda_controller_obligations()?,
+            processor_obligations: self.create_pipeda_processor_obligations()?,
+            lawful_basis_framework: self.create_pipeda_lawful_basis_framework(),
+            consent_requirements: self.create_pipeda_consent_requirements()?,
+            cross_border_transfers: self.create_pipeda_cross_border_transfers()?,
+            breach_notification: self.create_pipeda_breach_notification()?,
+            enforcement_mechanisms: self.create_pipeda_enforcement()?,
+            penalties: self.create_pipeda_penalties(),
+        })
+    }
     fn create_eu_ai_act(&self) -> AionResult<AIGovernanceFramework> {
         Ok(AIGovernanceFramework {
             jurisdiction: "European Union".to_string(),
@@ -2226,9 +2505,51 @@ impl ComprehensiveLegalLibrary {
             governance_structures: Vec::new(),
         })
     }
-    fn create_us_ai_executive_order(&self) -> AionResult<AIGovernanceFramework> { todo!() }
-    fn create_uk_ai_framework(&self) -> AionResult<AIGovernanceFramework> { todo!() }
-    fn create_china_ai_regulation(&self) -> AionResult<AIGovernanceFramework> { todo!() }
+    fn create_us_ai_executive_order(&self) -> AionResult<AIGovernanceFramework> {
+        Ok(AIGovernanceFramework {
+            jurisdiction: "United States".to_string(),
+            framework_name: "Executive Order on Safe, Secure, and Trustworthy AI".to_string(),
+            ai_definition: "Machine-based systems that can influence real or virtual environments by generating outputs such as content, predictions, recommendations, or decisions for a given set of objectives.".to_string(),
+            risk_management_requirements: self.create_us_ai_risk_management()?,
+            algorithmic_accountability: self.create_us_ai_algorithmic_accountability()?,
+            transparency_obligations: self.create_us_ai_transparency_obligations()?,
+            human_oversight_requirements: self.create_us_ai_human_oversight()?,
+            data_governance: self.create_us_ai_data_governance()?,
+            bias_mitigation: self.create_us_ai_bias_mitigation()?,
+            impact_assessments: self.create_us_ai_impact_assessments()?,
+            enforcement_mechanisms: self.create_us_ai_enforcement()?,
+        })
+    }
+    fn create_uk_ai_framework(&self) -> AionResult<AIGovernanceFramework> {
+        Ok(AIGovernanceFramework {
+            jurisdiction: "United Kingdom".to_string(),
+            framework_name: "UK AI White Paper: A pro-innovation approach to AI regulation".to_string(),
+            ai_definition: "Systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition, decision-making, and language translation.".to_string(),
+            risk_management_requirements: self.create_uk_ai_risk_management()?,
+            algorithmic_accountability: self.create_uk_ai_algorithmic_accountability()?,
+            transparency_obligations: self.create_uk_ai_transparency_obligations()?,
+            human_oversight_requirements: self.create_uk_ai_human_oversight()?,
+            data_governance: self.create_uk_ai_data_governance()?,
+            bias_mitigation: self.create_uk_ai_bias_mitigation()?,
+            impact_assessments: self.create_uk_ai_impact_assessments()?,
+            enforcement_mechanisms: self.create_uk_ai_enforcement()?,
+        })
+    }
+    fn create_china_ai_regulation(&self) -> AionResult<AIGovernanceFramework> {
+        Ok(AIGovernanceFramework {
+            jurisdiction: "People's Republic of China".to_string(),
+            framework_name: "Algorithmic Recommendation Management Provisions".to_string(),
+            ai_definition: "Algorithmic recommendation service refers to the use of algorithms to provide information to users on the Internet.".to_string(),
+            risk_management_requirements: self.create_china_ai_risk_management()?,
+            algorithmic_accountability: self.create_china_ai_algorithmic_accountability()?,
+            transparency_obligations: self.create_china_ai_transparency_obligations()?,
+            human_oversight_requirements: self.create_china_ai_human_oversight()?,
+            data_governance: self.create_china_ai_data_governance()?,
+            bias_mitigation: self.create_china_ai_bias_mitigation()?,
+            impact_assessments: self.create_china_ai_impact_assessments()?,
+            enforcement_mechanisms: self.create_china_ai_enforcement()?,
+        })
+    }
 }
 
 // Implementation for individual regulation types
