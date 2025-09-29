@@ -6,6 +6,7 @@ pub mod classification;
 pub mod knowledge_graph;
 pub mod regulatory_nlp;
 pub mod prediction;
+pub mod semantic_engine;
 
 pub use semantic_analyzer::*;
 pub use conflict_ml::*;
@@ -15,3 +16,4 @@ pub use classification::*;
 pub use knowledge_graph::*;
 pub use regulatory_nlp::*;
 pub use prediction::*;
+pub use semantic_engine::*;

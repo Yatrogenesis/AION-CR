@@ -12,6 +12,7 @@ pub mod comprehensive_legal_library;
 pub mod financial_services_library;
 pub mod healthcare_pharmaceutical_library;
 pub mod energy_utilities_library;
+pub mod connectors;
 
 pub use engine::*;
 pub use assessor::*;
@@ -27,3 +28,4 @@ pub use comprehensive_legal_library::*;
 pub use financial_services_library::*;
 pub use healthcare_pharmaceutical_library::*;
 pub use energy_utilities_library::*;
+pub use connectors::*;
