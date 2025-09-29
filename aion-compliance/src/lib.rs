@@ -28,6 +28,8 @@ pub mod real_time_dashboards;
 pub mod dashboard_components;
 pub mod alert_notification_system;
 pub mod multi_jurisdictional_framework;
+pub mod autonomous_agents;
+pub mod ai_reasoning_engine;
 
 pub use engine::*;
 pub use assessor::*;
@@ -59,3 +61,5 @@ pub use real_time_dashboards::*;
 pub use dashboard_components::*;
 pub use alert_notification_system::*;
 pub use multi_jurisdictional_framework::*;
+pub use autonomous_agents::*;
+pub use ai_reasoning_engine::*;
