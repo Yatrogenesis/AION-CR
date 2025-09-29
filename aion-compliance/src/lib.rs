@@ -24,6 +24,10 @@ pub mod database_manager;
 pub mod migrations;
 pub mod llm_integration;
 pub mod predictive_analytics;
+pub mod real_time_dashboards;
+pub mod dashboard_components;
+pub mod alert_notification_system;
+pub mod multi_jurisdictional_framework;
 
 pub use engine::*;
 pub use assessor::*;
@@ -51,3 +55,7 @@ pub use database_manager::*;
 pub use migrations::*;
 pub use llm_integration::*;
 pub use predictive_analytics::*;
+pub use real_time_dashboards::*;
+pub use dashboard_components::*;
+pub use alert_notification_system::*;
+pub use multi_jurisdictional_framework::*;
