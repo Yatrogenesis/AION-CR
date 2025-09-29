@@ -154,6 +154,7 @@ impl AdvancedConflictDetector {
                     severity: ConflictSeverity::High,
                     normative_a: f1.id.clone(),
                     normative_b: f2.id.clone(),
+                    involved_frameworks: vec![f1.id.clone(), f2.id.clone()],
                     description: format!(
                         "Conflicting mandatory requirements: '{}' vs '{}'",
                         req1.title, req2.title
@@ -177,6 +178,7 @@ impl AdvancedConflictDetector {
                             severity: ConflictSeverity::Medium,
                             normative_a: f1.id.clone(),
                             normative_b: f2.id.clone(),
+                            involved_frameworks: vec![f1.id.clone(), f2.id.clone()],
                             description: format!(
                                 "Contradictory conditions in requirements: '{}' vs '{}'",
                                 req1.title, req2.title
@@ -237,6 +239,7 @@ impl AdvancedConflictDetector {
                     severity: ConflictSeverity::Medium,
                     normative_a: f1.id.clone(),
                     normative_b: f2.id.clone(),
+                    involved_frameworks: vec![f1.id.clone(), f2.id.clone()],
                     description: format!(
                         "Same authority '{}' issued conflicting frameworks in same jurisdiction",
                         f1.authority
@@ -267,6 +270,7 @@ impl AdvancedConflictDetector {
                     severity: ConflictSeverity::Low,
                     normative_a: f1.id.clone(),
                     normative_b: f2.id.clone(),
+                    involved_frameworks: vec![f1.id.clone(), f2.id.clone()],
                     description: format!(
                         "Scope ambiguity between frameworks from different jurisdictions: {:?} vs {:?}",
                         f1.jurisdiction, f2.jurisdiction
@@ -316,6 +320,7 @@ impl AdvancedConflictDetector {
                             severity: ConflictSeverity::Medium,
                             normative_a: framework.id.clone(),
                             normative_b: dependency.id.clone(),
+                            involved_frameworks: vec![framework.id.clone(), dependency.id.clone()],
                             description: "Framework is effective before its dependency".to_string(),
                             affected_requirements: vec![],
                             context: HashMap::from([
@@ -351,6 +356,7 @@ impl AdvancedConflictDetector {
                             severity: ConflictSeverity::Low,
                             normative_a: f1.id.clone(),
                             normative_b: f2.id.clone(),
+                    involved_frameworks: vec![f1.id.clone(), f2.id.clone()],
                             description: "Overlapping temporal validity with similar scope".to_string(),
                             affected_requirements: vec![],
                             context: HashMap::new(),
@@ -399,6 +405,7 @@ impl AdvancedConflictDetector {
                             severity: conflict_level,
                             normative_a: int_framework.id.clone(),
                             normative_b: framework.id.clone(),
+                            involved_frameworks: vec![int_framework.id.clone(), framework.id.clone()],
                             description: format!(
                                 "Jurisdictional overlap: International vs {:?}",
                                 framework.jurisdiction

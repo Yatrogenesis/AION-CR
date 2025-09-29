@@ -531,6 +531,7 @@ impl PostgresNormativeStore {
                 severity: self.parse_conflict_severity(row.get("severity"))?,
                 normative_a: NormativeId(row.get("normative_a")),
                 normative_b: NormativeId(row.get("normative_b")),
+                involved_frameworks: vec![NormativeId(row.get("normative_a")), NormativeId(row.get("normative_b"))],
                 description: row.get("description"),
                 affected_requirements: row.get("affected_requirements"),
                 context: context_map,

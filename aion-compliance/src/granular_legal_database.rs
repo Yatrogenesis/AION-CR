@@ -15,8 +15,8 @@ pub struct AtomicLegalRule {
     pub applicability_conditions: Vec<ApplicabilityCondition>,
     pub exceptions: Vec<LegalException>,
     pub interpretations: Vec<LegalInterpretation>,
-    pub enforcement_mechanism: EnforcementMechanism,
-    pub penalties: Vec<Penalty>,
+    pub enforcement_mechanism: CodeEnforcementMechanism,
+    pub penalties: Vec<SanctionType>,
     pub related_rules: Vec<RuleRelationship>,
     pub precedents: Vec<LegalPrecedent>,
     pub guidance_documents: Vec<GuidanceDocument>,
@@ -29,8 +29,8 @@ pub struct RuleScope {
     pub temporal_scope: TemporalScope,
     pub entity_scope: Vec<EntityType>,
     pub activity_scope: Vec<ActivityType>,
-    pub data_scope: Vec<DataType>,
-    pub transaction_scope: Vec<TransactionType>,
+    pub data_scope: Vec<String>,
+    pub transaction_scope: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

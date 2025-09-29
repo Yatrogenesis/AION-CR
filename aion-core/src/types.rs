@@ -55,7 +55,7 @@ pub enum ComplianceStatus {
     Exempt,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub enum ConflictSeverity {
     Critical,
     High,
@@ -72,6 +72,8 @@ pub enum ConflictType {
     TemporalInconsistency,
     ScopeAmbiguity,
     AuthorityConflict,
+    RequirementConflict,
+    ImplementationConflict,
     PriorityDispute,
 }
 
@@ -156,6 +158,7 @@ pub struct NormativeConflict {
     pub severity: ConflictSeverity,
     pub normative_a: NormativeId,
     pub normative_b: NormativeId,
+    pub involved_frameworks: Vec<NormativeId>,
     pub description: String,
     pub affected_requirements: Vec<Uuid>,
     pub context: HashMap<String, String>,

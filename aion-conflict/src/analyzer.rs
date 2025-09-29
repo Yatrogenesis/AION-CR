@@ -55,6 +55,7 @@ impl ConflictAnalyzer {
             ConflictType::AuthorityConflict => 8.0,
             ConflictType::RequirementConflict => 7.5,
             ConflictType::ImplementationConflict => 6.5,
+            ConflictType::PriorityDispute => 5.5,
         }
     }
 
