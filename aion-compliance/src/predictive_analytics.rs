@@ -999,13 +999,13 @@ pub enum ImplementationEffort {
 
 #[derive(Debug, Clone)]
 pub struct RiskAssessment {
-    pub risk_level: RiskLevel,
+    pub risk_level: RiskLevelCategory,
     pub risk_factors: Vec<String>,
     pub mitigation_strategies: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
-pub enum RiskLevel {
+pub enum RiskLevelCategory {
     Low,
     Medium,
     High,

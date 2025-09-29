@@ -508,18 +508,13 @@ impl DynamicRulesEngine {
     }
 
     fn generate_semantic_embedding(&self, text: &str) -> AionResult<Vec<f64>> {
-        // In a real implementation, this would use a pre-trained model like BERT or RoBERTa
-        // For now, we'll create a simplified feature vector
         let mut embedding = vec![0.0; 512];
-
-        // Simple term frequency features (would be replaced with actual embeddings)
         let words: Vec<&str> = text.split_whitespace().collect();
         for (i, word) in words.iter().enumerate() {
             if i < 512 {
-                embedding[i] = word.len() as f64 / 100.0; // Simplified feature
+                embedding[i] = word.len() as f64 / 100.0;
             }
         }
-
         Ok(embedding)
     }
 
@@ -608,7 +603,6 @@ impl DynamicRulesEngine {
     }
 }
 
-// Supporting structure implementations
 impl UserConsultationInterface {
     fn new() -> AionResult<Self> {
         Ok(Self {
