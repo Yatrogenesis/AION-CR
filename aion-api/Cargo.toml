@@ -1,0 +1,23 @@
+[package]
+name = "aion-api"
+version = "1.0.0"
+edition = "2021"
+description = "REST API server for AION-CR"
+
+[dependencies]
+aion-core = { path = "../aion-core" }
+aion-normative = { path = "../aion-normative" }
+aion-compliance = { path = "../aion-compliance" }
+aion-audit = { path = "../aion-audit" }
+aion-conflict = { path = "../aion-conflict" }
+aion-db = { path = "../aion-db" }
+tokio = { version = "1.0", features = ["full"] }
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+tracing = "0.1"

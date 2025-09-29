@@ -1,0 +1,21 @@
+[package]
+name = "aion-cli"
+version = "1.0.0"
+edition = "2021"
+description = "Command-line interface for AION-CR"
+
+[dependencies]
+aion-core = { path = "../aion-core" }
+aion-normative = { path = "../aion-normative" }
+aion-compliance = { path = "../aion-compliance" }
+aion-audit = { path = "../aion-audit" }
+aion-conflict = { path = "../aion-conflict" }
+aion-db = { path = "../aion-db" }
+clap = { version = "4.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+colored = "2.0"

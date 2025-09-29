@@ -1,0 +1,51 @@
+[package]
+name = "aion-cr"
+version = "1.0.0"
+edition = "2021"
+authors = ["AION Development Team"]
+description = "Artificial Intelligence Operations Network - Compliance & Regulations Framework"
+license = "MIT"
+repository = "https://github.com/your-org/AION-CR"
+keywords = ["governance", "compliance", "regulations", "audit", "normative"]
+categories = ["development-tools", "command-line-utilities"]
+
+[workspace]
+members = [
+    "aion-core",
+    "aion-normative",
+    "aion-compliance",
+    "aion-audit",
+    "aion-conflict",
+    "aion-api",
+    "aion-cli",
+    "aion-db"
+]
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+thiserror = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = "0.5"
+
+[[bin]]
+name = "aion-cr"
+path = "src/main.rs"
+
+[[bench]]
+name = "normative_resolution"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

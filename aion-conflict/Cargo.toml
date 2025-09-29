@@ -1,0 +1,17 @@
+[package]
+name = "aion-conflict"
+version = "1.0.0"
+edition = "2021"
+description = "Advanced conflict resolution engine for normative frameworks"
+
+[dependencies]
+aion-core = { path = "../aion-core" }
+aion-normative = { path = "../aion-normative" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+tracing = "0.1"
+petgraph = "0.6"
+rayon = "1.0"
