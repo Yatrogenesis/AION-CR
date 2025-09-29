@@ -561,10 +561,10 @@ impl AdvancedComplianceEngine {
     }
 
     fn generate_consolidated_recommendations(&self, assessments: &mut [ComplianceAssessment]) -> AionResult<()> {
-        let mut all_findings: Vec<&Finding> = assessments.iter().flat_map(|a| &a.findings).collect();
-        all_findings.sort_by(|a, b| b.severity.cmp(&a.severity));
+        let mut all_finding_ids: Vec<uuid::Uuid> = assessments.iter().flat_map(|a| a.findings.iter().map(|f| f.id)).collect();
+        let finding_count = all_finding_ids.len();
 
-        if all_findings.len() > 5 {
+        if finding_count > 5 {
             for assessment in assessments.iter_mut() {
                 assessment.recommendations.push(Recommendation {
                     id: Uuid::new_v4(),
@@ -574,7 +574,7 @@ impl AdvancedComplianceEngine {
                     effort_estimate: Some("high".to_string()),
                     timeline: Some("90 days".to_string()),
                     responsible_party: Some("Executive Leadership".to_string()),
-                    related_findings: all_findings.iter().map(|f| f.id).collect(),
+                    related_findings: all_finding_ids.clone(),
                 });
             }
         }

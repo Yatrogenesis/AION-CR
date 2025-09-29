@@ -258,7 +258,7 @@ impl Default for InMemoryNormativeRepository {
 }
 
 impl NormativeRepository for InMemoryNormativeRepository {
-    fn store_framework(&mut self, framework: NormativeFramework) -> AionResult<()> {
+    fn store_framework(&self, framework: NormativeFramework) -> AionResult<()> {
         let id = framework.id.clone();
 
         let mut frameworks = self.frameworks.write().map_err(|e| AionError::InternalError {
@@ -289,7 +289,7 @@ impl NormativeRepository for InMemoryNormativeRepository {
         Ok(frameworks.values().cloned().collect())
     }
 
-    fn update_framework(&mut self, framework: NormativeFramework) -> AionResult<()> {
+    fn update_framework(&self, framework: NormativeFramework) -> AionResult<()> {
         let id = framework.id.clone();
 
         let mut frameworks = self.frameworks.write().map_err(|e| AionError::InternalError {
@@ -307,7 +307,7 @@ impl NormativeRepository for InMemoryNormativeRepository {
         }
     }
 
-    fn delete_framework(&mut self, id: &NormativeId) -> AionResult<()> {
+    fn delete_framework(&self, id: &NormativeId) -> AionResult<()> {
         let mut frameworks = self.frameworks.write().map_err(|e| AionError::InternalError {
             message: format!("Failed to acquire write lock on frameworks: {}", e),
         })?;

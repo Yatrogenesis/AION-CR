@@ -32,7 +32,7 @@ pub enum NormativeType {
     Directive,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Jurisdiction {
     International,
     Federal,
@@ -64,7 +64,7 @@ pub enum ConflictSeverity {
     Informational,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ConflictType {
     DirectContradiction,
     ImplicitConflict,

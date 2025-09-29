@@ -634,7 +634,7 @@ impl PostgresNormativeStore {
 }
 
 impl NormativeRepository for PostgresNormativeStore {
-    fn store_framework(&mut self, framework: NormativeFramework) -> AionResult<()> {
+    fn store_framework(&self, framework: NormativeFramework) -> AionResult<()> {
         let rt = tokio::runtime::Handle::current();
         rt.block_on(async {
             let query = r#"
@@ -759,11 +759,11 @@ impl NormativeRepository for PostgresNormativeStore {
         })
     }
 
-    fn update_framework(&mut self, framework: NormativeFramework) -> AionResult<()> {
+    fn update_framework(&self, framework: NormativeFramework) -> AionResult<()> {
         self.store_framework(framework)
     }
 
-    fn delete_framework(&mut self, id: &NormativeId) -> AionResult<()> {
+    fn delete_framework(&self, id: &NormativeId) -> AionResult<()> {
         let rt = tokio::runtime::Handle::current();
         rt.block_on(async {
             let query = r#"

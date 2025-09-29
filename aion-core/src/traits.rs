@@ -1,12 +1,12 @@
 use crate::{AionResult, ComplianceAssessment, NormativeConflict, NormativeFramework, NormativeId};
 use std::collections::HashMap;
 
-pub trait NormativeRepository {
-    fn store_framework(&mut self, framework: NormativeFramework) -> AionResult<()>;
+pub trait NormativeRepository: Send + Sync {
+    fn store_framework(&self, framework: NormativeFramework) -> AionResult<()>;
     fn get_framework(&self, id: &NormativeId) -> AionResult<Option<NormativeFramework>>;
     fn list_frameworks(&self) -> AionResult<Vec<NormativeFramework>>;
-    fn update_framework(&mut self, framework: NormativeFramework) -> AionResult<()>;
-    fn delete_framework(&mut self, id: &NormativeId) -> AionResult<()>;
+    fn update_framework(&self, framework: NormativeFramework) -> AionResult<()>;
+    fn delete_framework(&self, id: &NormativeId) -> AionResult<()>;
     fn search_frameworks(&self, query: &str) -> AionResult<Vec<NormativeFramework>>;
     fn get_active_frameworks(&self) -> AionResult<Vec<NormativeFramework>>;
 }

@@ -1,5 +1,5 @@
 use crate::{AionError, AionResult};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, Timelike};
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -150,7 +150,7 @@ pub fn is_business_hours(timestamp: DateTime<Utc>) -> bool {
 
 pub fn generate_reference_id(prefix: &str) -> String {
     let timestamp = Utc::now().format("%Y%m%d%H%M%S");
-    let random_suffix: u32 = rand::random::<u32>() % 10000;
+    let random_suffix: u32 = (::rand::random::<u32>() % 10000);
     format!("{}-{}-{:04}", prefix, timestamp, random_suffix)
 }
 

@@ -1,0 +1,31 @@
+[package]
+name = "aion-nlp"
+version = "1.0.0"
+edition = "2021"
+description = "Natural Language Processing and Machine Learning for AION-CR normative analysis"
+
+[dependencies]
+aion-core = { path = "../aion-core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+tracing = "0.1"
+tokio = { version = "1.0", features = ["full"] }
+regex = "1.0"
+unicode-segmentation = "1.0"
+stem = "0.1"
+stopwords = "0.1"
+linfa = "0.7"
+linfa-clustering = "0.7"
+linfa-linear = "0.7"
+ndarray = "0.15"
+candle-core = "0.3"
+candle-nn = "0.3"
+candle-transformers = "0.3"
+tokenizers = "0.15"
+hf-hub = "0.3"
+rayon = "1.0"
+dashmap = "5.0"
+ordered-float = "4.0"
