@@ -15,17 +15,17 @@ Compliance & Regulations Framework
 }
 
 pub fn print_success(message: &str) {
-    println!("{} {}", "✅".green(), message);
+    println!("[SUCCESS] {}", message);
 }
 
 pub fn print_error(message: &str) {
-    println!("{} {}", "❌".red(), message);
+    println!("[ERROR] {}", message);
 }
 
 pub fn print_warning(message: &str) {
-    println!("{} {}", "⚠️".yellow(), message);
+    println!("[WARNING] {}", message);
 }
 
 pub fn print_info(message: &str) {
-    println!("{} {}", "ℹ️".blue(), message);
+    println!("[INFO] {}", message);
 }

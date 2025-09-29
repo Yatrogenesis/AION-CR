@@ -17,7 +17,7 @@ impl BusinessRuleEngine for MockBusinessRuleEngine {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 AION-CR + Ectus-R Integration Example");
+    println!("AION-CR + Ectus-R Integration Example");
     println!("=========================================");
 
     // Initialize compliance engine

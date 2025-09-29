@@ -8,6 +8,10 @@ pub mod regulatory_monitor;
 pub mod licensing_engine;
 pub mod granular_legal_database;
 pub mod interactive_query_system;
+pub mod comprehensive_legal_library;
+pub mod financial_services_library;
+pub mod healthcare_pharmaceutical_library;
+pub mod energy_utilities_library;
 
 pub use engine::*;
 pub use assessor::*;
@@ -19,3 +23,7 @@ pub use regulatory_monitor::*;
 pub use licensing_engine::*;
 pub use granular_legal_database::*;
 pub use interactive_query_system::*;
+pub use comprehensive_legal_library::*;
+pub use financial_services_library::*;
+pub use healthcare_pharmaceutical_library::*;
+pub use energy_utilities_library::*;

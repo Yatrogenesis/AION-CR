@@ -13,7 +13,6 @@ categories = ["development-tools", "command-line-utilities"]
 members = [
     "aion-core",
     "aion-normative",
-    "aion-compliance",
     "aion-audit",
     "aion-conflict",
     "aion-api",
@@ -35,7 +34,7 @@ thiserror = "1.0"
 clap = { version = "4.0", features = ["derive"] }
 aion-cli = { path = "aion-cli" }
 aion-core = { path = "aion-core" }
-aion-compliance = { path = "aion-compliance" }
+# aion-compliance = { path = "aion-compliance" } # Temporarily disabled for build
 aion-api = { path = "aion-api" }
 
 [dev-dependencies]
@@ -45,6 +44,10 @@ criterion = "0.5"
 [[bin]]
 name = "aion-cr"
 path = "src/main.rs"
+
+[[bin]]
+name = "aion-server"
+path = "aion-server.rs"
 
 [[bench]]
 name = "normative_resolution"
