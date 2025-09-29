@@ -1,0 +1,306 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-collector
+  namespace: aion-cr-monitoring
+  labels:
+    app: jaeger
+    component: collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+      component: collector
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: collector
+    spec:
+      containers:
+      - name: jaeger-collector
+        image: jaegertracing/jaeger-collector:1.55
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch:9200
+        - name: ES_USERNAME
+          value: elastic
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: password
+        ports:
+        - containerPort: 14269
+          name: admin
+        - containerPort: 14268
+          name: http
+        - containerPort: 14267
+          name: tchannel
+        - containerPort: 9411
+          name: zipkin
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 14269
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 14269
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-query
+  namespace: aion-cr-monitoring
+  labels:
+    app: jaeger
+    component: query
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+      component: query
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: query
+    spec:
+      containers:
+      - name: jaeger-query
+        image: jaegertracing/jaeger-query:1.55
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch:9200
+        - name: ES_USERNAME
+          value: elastic
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: password
+        - name: QUERY_BASE_PATH
+          value: /jaeger
+        ports:
+        - containerPort: 16686
+          name: query
+        - containerPort: 16687
+          name: admin
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 16687
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 16687
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jaeger-agent
+  namespace: aion-cr-monitoring
+  labels:
+    app: jaeger
+    component: agent
+spec:
+  selector:
+    matchLabels:
+      app: jaeger
+      component: agent
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: agent
+    spec:
+      containers:
+      - name: jaeger-agent
+        image: jaegertracing/jaeger-agent:1.55
+        args:
+        - --collector.host-port=jaeger-collector:14267
+        - --reporter.grpc.host-port=jaeger-collector:14250
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+          name: zipkin-compact
+        - containerPort: 6831
+          protocol: UDP
+          name: jaeger-compact
+        - containerPort: 6832
+          protocol: UDP
+          name: jaeger-binary
+        - containerPort: 5778
+          protocol: TCP
+          name: config-rest
+        - containerPort: 14271
+          protocol: TCP
+          name: admin
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 14271
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 14271
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: aion-cr-monitoring
+  labels:
+    app: jaeger
+    component: collector
+spec:
+  type: ClusterIP
+  ports:
+  - port: 14269
+    targetPort: 14269
+    protocol: TCP
+    name: admin
+  - port: 14268
+    targetPort: 14268
+    protocol: TCP
+    name: http
+  - port: 14267
+    targetPort: 14267
+    protocol: TCP
+    name: tchannel
+  - port: 9411
+    targetPort: 9411
+    protocol: TCP
+    name: zipkin
+  - port: 14250
+    targetPort: 14250
+    protocol: TCP
+    name: grpc
+  selector:
+    app: jaeger
+    component: collector
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-query
+  namespace: aion-cr-monitoring
+  labels:
+    app: jaeger
+    component: query
+spec:
+  type: ClusterIP
+  ports:
+  - port: 16686
+    targetPort: 16686
+    protocol: TCP
+    name: query
+  - port: 16687
+    targetPort: 16687
+    protocol: TCP
+    name: admin
+  selector:
+    app: jaeger
+    component: query
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-agent
+  namespace: aion-cr-monitoring
+  labels:
+    app: jaeger
+    component: agent
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 5775
+    targetPort: 5775
+    protocol: UDP
+    name: zipkin-compact
+  - port: 6831
+    targetPort: 6831
+    protocol: UDP
+    name: jaeger-compact
+  - port: 6832
+    targetPort: 6832
+    protocol: UDP
+    name: jaeger-binary
+  - port: 5778
+    targetPort: 5778
+    protocol: TCP
+    name: config-rest
+  - port: 14271
+    targetPort: 14271
+    protocol: TCP
+    name: admin
+  selector:
+    app: jaeger
+    component: agent
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jaeger-ingress
+  namespace: aion-cr-monitoring
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - tracing.aion-cr.ai
+    secretName: jaeger-tls
+  rules:
+  - host: tracing.aion-cr.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jaeger-query
+            port:
+              number: 16686

@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aion-cr-web-ui
+  namespace: aion-cr
+  labels:
+    app: aion-cr-web-ui
+    version: v1.0.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: aion-cr-web-ui
+  template:
+    metadata:
+      labels:
+        app: aion-cr-web-ui
+        version: v1.0.0
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: web-content
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: web-content
+        configMap:
+          name: aion-cr-web-content
+      - name: nginx-config
+        configMap:
+          name: aion-cr-nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aion-cr-web-ui-service
+  namespace: aion-cr
+  labels:
+    app: aion-cr-web-ui
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: aion-cr-web-ui
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aion-cr-web-ui-ingress
+  namespace: aion-cr
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - dashboard.aion-cr.ai
+    secretName: aion-cr-web-ui-tls
+  rules:
+  - host: dashboard.aion-cr.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aion-cr-web-ui-service
+            port:
+              number: 80
