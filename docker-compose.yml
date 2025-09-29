@@ -1,0 +1,255 @@
+version: '3.8'
+
+services:
+  aion-cr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aion-cr-main
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "9090:9090"
+    environment:
+      - RUST_LOG=info
+      - AION_MODE=production
+      - DATABASE_URL=postgresql://aion:aion_password@postgres:5432/aion_cr
+      - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - PROMETHEUS_URL=http://prometheus:9090
+      - JAEGER_ENDPOINT=http://jaeger:14268/api/traces
+    volumes:
+      - aion-data:/app/data
+      - aion-logs:/app/logs
+      - aion-config:/app/config
+      - aion-models:/app/models
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: aion-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=aion_cr
+      - POSTGRES_USER=aion
+      - POSTGRES_PASSWORD=aion_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aion -d aion_cr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: aion-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: aion-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: aion-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - aion-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aion-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - aion-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aion-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - aion-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: aion-jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    networks:
+      - aion-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: aion-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - aion-cr
+    networks:
+      - aion-network
+
+  ml-inference:
+    build:
+      context: ./ml-inference
+      dockerfile: Dockerfile
+    container_name: aion-ml-inference
+    restart: unless-stopped
+    environment:
+      - MODEL_PATH=/models
+      - INFERENCE_PORT=8001
+    volumes:
+      - aion-models:/models
+    ports:
+      - "8001:8001"
+    networks:
+      - aion-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  vector:
+    image: timberio/vector:latest-alpine
+    container_name: aion-vector
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/vector.toml:/etc/vector/vector.toml
+      - aion-logs:/logs
+    depends_on:
+      - elasticsearch
+    networks:
+      - aion-network
+
+  backup:
+    image: postgres:15-alpine
+    container_name: aion-backup
+    restart: "no"
+    environment:
+      - POSTGRES_DB=aion_cr
+      - POSTGRES_USER=aion
+      - POSTGRES_PASSWORD=aion_password
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh
+    depends_on:
+      - postgres
+    networks:
+      - aion-network
+    entrypoint: ["/backup.sh"]
+
+volumes:
+  aion-data:
+    driver: local
+  aion-logs:
+    driver: local
+  aion-config:
+    driver: local
+  aion-models:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  aion-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
