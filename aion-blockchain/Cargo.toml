@@ -1,0 +1,179 @@
+[package]
+name = "aion-blockchain"
+version = "1.0.0"
+edition = "2021"
+authors = ["AION Development Team"]
+description = "Blockchain Integration for AION-CR with Immutable Compliance Audit Trails and Smart Contracts"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+futures = "0.3"
+async-trait = "0.1"
+parking_lot = "0.12"
+dashmap = "5.0"
+
+# Blockchain Core
+sha2 = "0.10"
+sha3 = "0.10"
+blake3 = "1.5"
+ed25519-dalek = "2.0"
+secp256k1 = "0.28"
+ring = "0.17"
+aes-gcm = "0.10"
+
+# Ethereum Integration
+ethers = "2.0"
+ethers-contract = "2.0"
+ethers-providers = "2.0"
+ethers-signers = "2.0"
+web3 = "0.19"
+alloy = "0.1"
+
+# Bitcoin Integration
+bitcoin = "0.31"
+bitcoincore-rpc = "0.18"
+electrum-client = "0.19"
+bdk = "0.29"
+
+# Substrate/Polkadot
+substrate-subxt = "0.34"
+sp-core = "21.0"
+sp-runtime = "24.0"
+frame-support = "21.0"
+pallet-balances = "21.0"
+
+# Cosmos/Tendermint
+tendermint = "0.34"
+cosmrs = "0.15"
+cosmos-sdk-proto = "0.20"
+
+# Solana Integration
+solana-client = "1.17"
+solana-sdk = "1.17"
+solana-program = "1.17"
+anchor-client = "0.29"
+
+# Hyperledger Fabric
+fabric-sdk-rs = "0.1"
+protobuf = "3.4"
+
+# Smart Contract Platforms
+wasmtime = "13.0"
+wasmer = "4.2"
+ink-env = "4.3"
+ink-storage = "4.3"
+
+# IPFS and Distributed Storage
+ipfs-api-backend-hyper = "0.6"
+ipfs-api = "0.17"
+libp2p = "0.53"
+multihash = "0.19"
+cid = "0.10"
+
+# Consensus Algorithms
+raft = "0.7"
+consensus = "0.1"
+pbft = "0.1"
+
+# Zero-Knowledge Proofs
+ark-std = "0.4"
+ark-ff = "0.4"
+ark-ec = "0.4"
+ark-poly = "0.4"
+arkworks-rs = "0.4"
+bellman = "0.14"
+bls12_381 = "0.8"
+halo2_proofs = "0.3"
+plonky2 = "0.1"
+circom-rs = "0.1"
+snarkjs-rs = "0.1"
+
+# Layer 2 Solutions
+lightning = "0.0.118"
+polygon-sdk = "0.1"
+arbitrum-sdk = "0.1"
+optimism-sdk = "0.1"
+
+# Cross-Chain Protocols
+ibc-rs = "0.48"
+cosmos-ibc = "0.1"
+xcmp = "0.1"
+
+# MEV and DeFi
+flashloan-rs = "0.1"
+uniswap-v3-sdk = "0.1"
+dex-aggregator = "0.1"
+
+# NFT and Digital Assets
+erc721-rs = "0.1"
+erc1155-rs = "0.1"
+metadata-standards = "0.1"
+
+# Oracles
+chainlink-rs = "0.1"
+band-protocol = "0.1"
+pyth-sdk = "0.1"
+
+# Privacy Coins
+monero-rs = "0.1"
+zcash-rs = "0.1"
+
+# Blockchain Analytics
+dune-analytics = "0.1"
+the-graph-rs = "0.1"
+moralis-rs = "0.1"
+
+# Development Tools
+hardhat-rs = "0.1"
+truffle-rs = "0.1"
+remix-rs = "0.1"
+
+# Database Integration
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
+redis = { version = "0.23", features = ["tokio-comp"] }
+rocksdb = "0.21"
+mongodb = "2.7"
+
+# Networking
+hyper = { version = "0.14", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+tonic = "0.10"
+jsonrpc-core = "18.0"
+
+# Metrics and Monitoring
+prometheus = "0.13"
+opentelemetry = "0.21"
+jaeger = "0.20"
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = "0.5"
+proptest = "1.0"
+quickcheck = "1.0"
+mock-blockchain = "0.1"
+
+[features]
+default = ["ethereum", "bitcoin", "ipfs", "zk-proofs"]
+ethereum = ["ethers", "web3", "alloy"]
+bitcoin = ["bitcoin", "bitcoincore-rpc", "bdk"]
+substrate = ["substrate-subxt", "sp-core", "sp-runtime"]
+cosmos = ["tendermint", "cosmrs", "cosmos-sdk-proto"]
+solana = ["solana-client", "solana-sdk", "anchor-client"]
+hyperledger = ["fabric-sdk-rs"]
+ipfs = ["ipfs-api", "libp2p"]
+zk-proofs = ["ark-std", "bellman", "halo2_proofs"]
+layer2 = ["lightning", "polygon-sdk", "arbitrum-sdk"]
+cross-chain = ["ibc-rs", "cosmos-ibc"]
+privacy = ["monero-rs", "zcash-rs"]
+defi = ["uniswap-v3-sdk", "dex-aggregator"]
+nft = ["erc721-rs", "erc1155-rs"]
+oracles = ["chainlink-rs", "pyth-sdk"]
+analytics = ["dune-analytics", "the-graph-rs"]
+development = ["hardhat-rs", "truffle-rs"]

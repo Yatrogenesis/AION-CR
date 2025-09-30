@@ -1,0 +1,398 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aion-cr-core
+  namespace: aion-cr
+  labels:
+    app: aion-cr-core
+    version: v1.0.0
+    tier: application
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: aion-cr-core
+  template:
+    metadata:
+      labels:
+        app: aion-cr-core
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: aion-cr-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: aion-cr-core
+        image: aion-cr:v1.0.0-production
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: RUST_LOG
+          value: "info"
+        - name: AION_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: aion-cr-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: aion-cr-secrets
+              key: redis-url
+        - name: QUANTUM_SECURITY_LEVEL
+          value: "maximum"
+        - name: ML_MODEL_PATH
+          value: "/app/models"
+        - name: COMPLIANCE_MODE
+          value: "enterprise"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+            ephemeral-storage: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: models-volume
+          mountPath: /app/models
+          readOnly: true
+        - name: temp-volume
+          mountPath: /tmp
+        - name: logs-volume
+          mountPath: /app/logs
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config-volume
+        configMap:
+          name: aion-cr-config
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: aion-cr-models-pvc
+      - name: temp-volume
+        emptyDir: {}
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: aion-cr-logs-pvc
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node-type: compute-optimized
+      tolerations:
+      - key: "aion-cr-dedicated"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: aion-cr-core
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aion-cr-service
+  namespace: aion-cr
+  labels:
+    app: aion-cr-core
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:region:account:certificate/cert-id"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+spec:
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8443
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  selector:
+    app: aion-cr-core
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aion-cr-ingress
+  namespace: aion-cr
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES256-GCM-SHA384"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - api.aion-cr.com
+    - compliance.aion-cr.com
+    - quantum.aion-cr.com
+    secretName: aion-cr-tls
+  rules:
+  - host: api.aion-cr.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aion-cr-service
+            port:
+              number: 80
+  - host: compliance.aion-cr.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aion-cr-compliance-service
+            port:
+              number: 80
+  - host: quantum.aion-cr.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aion-cr-quantum-service
+            port:
+              number: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aion-cr-config
+  namespace: aion-cr
+data:
+  production.toml: |
+    [server]
+    host = "0.0.0.0"
+    port = 8080
+    https_port = 8443
+    metrics_port = 9090
+
+    [database]
+    max_connections = 100
+    connection_timeout = "30s"
+    query_timeout = "60s"
+
+    [redis]
+    max_connections = 50
+    connection_timeout = "10s"
+
+    [quantum]
+    security_level = "maximum"
+    algorithm_preference = ["kyber1024", "dilithium5", "falcon1024"]
+    key_rotation_interval = "24h"
+
+    [ml]
+    model_refresh_interval = "1h"
+    prediction_cache_ttl = "30m"
+    training_mode = "continuous"
+
+    [compliance]
+    frameworks = ["gdpr", "hipaa", "sox", "pci_dss", "ai_act"]
+    audit_level = "comprehensive"
+    real_time_monitoring = true
+
+    [monitoring]
+    metrics_enabled = true
+    tracing_enabled = true
+    log_level = "info"
+
+    [security]
+    tls_min_version = "1.2"
+    require_authentication = true
+    session_timeout = "8h"
+    max_login_attempts = 3
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aion-cr-secrets
+  namespace: aion-cr
+type: Opaque
+data:
+  database-url: cG9zdGdyZXNxbDovL2Fpb246YWlvbl9wYXNzd29yZEBwb3N0Z3Jlcy1zZXJ2aWNlOjU0MzIvYWlvbl9jb21wbGlhbmNl
+  redis-url: cmVkaXM6Ly9yZWRpcy1zZXJ2aWNlOjYzNzk=
+  jwt-secret: c3VwZXJfc2VjcmV0X2p3dF9rZXlfZm9yX2Fpb25fY3JfcHJvZHVjdGlvbg==
+  encryption-key: YWlvbl9jcl9lbnRlcnByaXNlX2VuY3J5cHRpb25fa2V5XzIwMjQ=
+  api-keys: YWlvbl9hcGlfa2V5XzEyMzQ1Njc4OTA=
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aion-cr-service-account
+  namespace: aion-cr
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/aion-cr-service-role
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aion-cr-models-pvc
+  namespace: aion-cr
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aion-cr-logs-pvc
+  namespace: aion-cr
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: standard-ssd
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: aion-cr-pdb
+  namespace: aion-cr
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: aion-cr-core
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: aion-cr-hpa
+  namespace: aion-cr
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: aion-cr-core
+  minReplicas: 3
+  maxReplicas: 50
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: compliance_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60

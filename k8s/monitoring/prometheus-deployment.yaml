@@ -1,0 +1,312 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: aion-cr-monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'aion-cr-production'
+        environment: 'production'
+
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'aion-cr-core'
+        kubernetes_sd_configs:
+        - role: endpoints
+          namespaces:
+            names:
+            - aion-cr-production
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_service_name]
+          action: keep
+          regex: aion-cr-core-service
+        - source_labels: [__meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: metrics
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          target_label: kubernetes_name
+        - source_labels: [__meta_kubernetes_pod_name]
+          target_label: kubernetes_pod_name
+
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+        - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: default;kubernetes;https
+
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+        - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - target_label: __address__
+          replacement: kubernetes.default.svc:443
+        - source_labels: [__meta_kubernetes_node_name]
+          regex: (.+)
+          target_label: __metrics_path__
+          replacement: /api/v1/nodes/${1}/proxy/metrics
+
+      - job_name: 'kubernetes-cadvisor'
+        kubernetes_sd_configs:
+        - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - target_label: __address__
+          replacement: kubernetes.default.svc:443
+        - source_labels: [__meta_kubernetes_node_name]
+          regex: (.+)
+          target_label: __metrics_path__
+          replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+      - job_name: 'postgresql-exporter'
+        static_configs:
+          - targets: ['postgres-exporter:9187']
+        scrape_interval: 30s
+
+      - job_name: 'redis-exporter'
+        static_configs:
+          - targets: ['redis-exporter:9121']
+        scrape_interval: 30s
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+
+  alerts.yml: |
+    groups:
+    - name: aion-cr-alerts
+      rules:
+      - alert: AionCRServiceDown
+        expr: up{job="aion-cr-core"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AION-CR service is down"
+          description: "AION-CR service {{ $labels.instance }} has been down for more than 5 minutes."
+
+      - alert: AionCRHighCPU
+        expr: rate(container_cpu_usage_seconds_total{pod=~"aion-cr-core-.*"}[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AION-CR high CPU usage"
+          description: "AION-CR pod {{ $labels.pod }} CPU usage is above 80% for more than 10 minutes."
+
+      - alert: AionCRHighMemory
+        expr: container_memory_usage_bytes{pod=~"aion-cr-core-.*"} / container_spec_memory_limit_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AION-CR high memory usage"
+          description: "AION-CR pod {{ $labels.pod }} memory usage is above 85% for more than 5 minutes."
+
+      - alert: AionCRDatabaseConnections
+        expr: pg_stat_database_numbackends{datname="aion_compliance"} > 40
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AION-CR high database connections"
+          description: "AION-CR database connections are above 40 for more than 5 minutes."
+
+      - alert: AionCRResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="aion-cr-core"}[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AION-CR high response time"
+          description: "AION-CR 95th percentile response time is above 2 seconds for more than 10 minutes."
+
+      - alert: AionCRComplianceViolation
+        expr: aion_compliance_violations_total > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AION-CR compliance violation detected"
+          description: "AION-CR has detected {{ $value }} compliance violations."
+
+      - alert: AionCRQuantumCryptoFailure
+        expr: aion_quantum_crypto_errors_total > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AION-CR quantum cryptography failure"
+          description: "AION-CR quantum cryptography system has {{ $value }} failures."
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: aion-cr-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.45.0
+        args:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--web.console.libraries=/etc/prometheus/console_libraries'
+          - '--web.console.templates=/etc/prometheus/consoles'
+          - '--web.enable-lifecycle'
+          - '--web.enable-admin-api'
+          - '--storage.tsdb.retention.time=30d'
+          - '--storage.tsdb.retention.size=50GB'
+        ports:
+        - containerPort: 9090
+          name: web
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: prometheus-config
+          mountPath: /etc/prometheus
+        - name: prometheus-storage
+          mountPath: /prometheus
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config
+      - name: prometheus-storage
+        persistentVolumeClaim:
+          claimName: prometheus-storage-pvc
+      nodeSelector:
+        kubernetes.io/arch: amd64
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: aion-cr-monitoring
+  labels:
+    app: prometheus
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: web
+  selector:
+    app: prometheus
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-service-account
+  namespace: aion-cr-monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-cluster-role
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-cluster-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: prometheus-service-account
+  namespace: aion-cr-monitoring
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-storage-pvc
+  namespace: aion-cr-monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp3-encrypted
