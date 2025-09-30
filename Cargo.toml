@@ -18,7 +18,8 @@ members = [
     "aion-api",
     "aion-cli",
     "aion-db",
-    "aion-nlp"
+    "aion-nlp",
+    "integration"
 ]
 
 [dependencies]
@@ -36,6 +37,7 @@ aion-cli = { path = "aion-cli" }
 aion-core = { path = "aion-core" }
 # aion-compliance = { path = "aion-compliance" } # Temporarily disabled for build
 aion-api = { path = "aion-api" }
+aion-integration = { path = "integration" }
 
 [dev-dependencies]
 tokio-test = "0.4"
