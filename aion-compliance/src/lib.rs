@@ -33,6 +33,7 @@ pub mod ai_reasoning_engine;
 pub mod quantum_cryptography;
 pub mod regulatory_prediction_system;
 pub mod testing_frameworks;
+pub mod performance_optimization;
 
 pub use engine::*;
 pub use assessor::*;
@@ -69,3 +70,4 @@ pub use ai_reasoning_engine::*;
 pub use quantum_cryptography::*;
 pub use regulatory_prediction_system::*;
 pub use testing_frameworks::*;
+pub use performance_optimization::*;
