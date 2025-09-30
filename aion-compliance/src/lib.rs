@@ -34,6 +34,10 @@ pub mod quantum_cryptography;
 pub mod regulatory_prediction_system;
 pub mod testing_frameworks;
 pub mod performance_optimization;
+pub mod real_quantum_crypto;
+pub mod real_ml_models;
+pub mod real_database;
+pub mod real_http_apis;
 
 pub use engine::*;
 pub use assessor::*;
@@ -71,3 +75,7 @@ pub use quantum_cryptography::*;
 pub use regulatory_prediction_system::*;
 pub use testing_frameworks::*;
 pub use performance_optimization::*;
+pub use real_quantum_crypto::*;
+pub use real_ml_models::*;
+pub use real_database::*;
+pub use real_http_apis::*;

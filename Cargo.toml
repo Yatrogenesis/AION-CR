@@ -35,7 +35,7 @@ thiserror = "1.0"
 clap = { version = "4.0", features = ["derive"] }
 aion-cli = { path = "aion-cli" }
 aion-core = { path = "aion-core" }
-# aion-compliance = { path = "aion-compliance" } # Temporarily disabled for build
+aion-compliance = { path = "aion-compliance" }
 aion-api = { path = "aion-api" }
 aion-integration = { path = "integration" }
 
