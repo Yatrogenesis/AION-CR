@@ -1,0 +1,14 @@
+{
+  "evaluation_type": "CaseHOLD Legal Reasoning",
+  "timestamp": 1759351803.6598864,
+  "total_execution_time": 0,
+  "total_cases_analyzed": 1359,
+  "results": [
+    {
+      "task_name": "Constitutional Law Cases",
+      "legal_area": "Constitutional Law",
+      "score": 91.7,
+      "max_score": 100.0,
+      "accuracy": 0.917,
+      "percentile": 94.8,
+      "passed": 
