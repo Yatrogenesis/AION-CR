@@ -1,0 +1,12 @@
+{
+  "evaluation_type": "Legal Benchmarks",
+  "timestamp": 1759351562.2279222,
+  "total_execution_time": 1329,
+  "results": [
+    {
+      "benchmark_name": "LegalBench",
+      "task_category": "Comprehensive Legal Reasoning",
+      "score": 90.975,
+      "max_score": 100.0,
+      "percentile": 95.7,
+      "passed": 
