@@ -19,7 +19,9 @@ members = [
     "aion-cli",
     "aion-db",
     "aion-nlp",
-    "integration"
+    "integration",
+    "tests",
+    "compliance-libraries"
 ]
 
 [dependencies]

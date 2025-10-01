@@ -1,0 +1,83 @@
+[package]
+name = "aion-cr-testing-suite"
+version = "1.0.0"
+edition = "2021"
+authors = ["AION-CR Team <team@aion-cr.enterprise.com>"]
+description = "Enterprise-grade functional testing suite for AION-CR platform"
+
+[[bin]]
+name = "aion-test-runner"
+path = "main.rs"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = { version = "0.7", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Time and UUID
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4", "fast-rng"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# CLI interface
+clap = { version = "4.4", features = ["derive", "cargo"] }
+colored = "2.1"
+indicatif = "0.17"
+
+# HTTP client for API testing
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Test utilities
+criterion = { version = "0.5", features = ["html_reports"] }
+quickcheck = "1.0"
+tempfile = "3.8"
+
+# Database testing
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = ["full-testing"]
+
+# Testing modes
+quick-tests = []
+security-tests = []
+performance-tests = []
+integration-tests = []
+full-testing = ["quick-tests", "security-tests", "performance-tests", "integration-tests"]
+
+# Test environments
+local-testing = []
+staging-testing = []
+production-testing = []
+
+# Advanced features
+load-testing = []
+stress-testing = []
+chaos-testing = []
+penetration-testing = []
+
+[profile.test]
+opt-level = 1
+debug = true
+
+[profile.bench]
+opt-level = 3
+debug = false
