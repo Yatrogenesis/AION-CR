@@ -1,0 +1,190 @@
+[package]
+name = "aion-compliance-libraries"
+version = "1.0.0"
+edition = "2021"
+authors = ["AION-CR Team <team@aion-cr.enterprise.com>"]
+description = "AION-CR Complete Regulatory Text Libraries - Comprehensive compliance content with full legal texts"
+license = "MIT"
+repository = "https://github.com/aion-cr/compliance-libraries"
+keywords = ["compliance", "regulations", "legal", "cfr", "gdpr"]
+categories = ["text-processing", "database", "data-structures"]
+
+[lib]
+name = "aion_compliance_libraries"
+path = "src/lib.rs"
+
+[[bin]]
+name = "aion-compliance-search"
+path = "src/bin/compliance_search.rs"
+
+[[bin]]
+name = "aion-regulation-analyzer"
+path = "src/bin/regulation_analyzer.rs"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = { version = "0.7", features = ["full"] }
+
+# Serialization and data handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Error handling and utilities
+anyhow = "1.0"
+thiserror = "1.0"
+uuid = { version = "1.6", features = ["v4", "fast-rng"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Database for compliance content
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
+redis = { version = "0.24", features = ["tokio-comp"] }
+
+# Text processing and search
+tantivy = "0.21"
+regex = "1.10"
+unicode-normalization = "0.1"
+unicode-segmentation = "1.10"
+
+# Natural language processing
+nlp = "0.6"
+stemmer = "1.2"
+
+# Configuration management
+config = "0.14"
+dotenvy = "0.15"
+
+# Data structures
+dashmap = "5.5"
+indexmap = "2.1"
+petgraph = "0.6"
+
+# CLI utilities
+clap = { version = "4.4", features = ["derive", "cargo"] }
+colored = "2.1"
+indicatif = "0.17"
+comfy-table = "7.1"
+
+# XML/JSON processing for regulatory formats
+quick-xml = "0.31"
+roxmltree = "0.19"
+
+# PDF processing for regulatory documents
+pdf-extract = "0.7"
+lopdf = "0.32"
+
+# Web scraping for regulatory updates
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+scraper = "0.17"
+url = "2.5"
+
+# Fuzzy search and matching
+fuzzywuzzy = "1.0"
+strsim = "0.10"
+
+# Date and time parsing
+chrono-english = "0.1"
+parse-display = "0.8"
+
+# Machine learning for text classification
+linfa = "0.7"
+ndarray = "0.15"
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+
+# Compression for large regulatory texts
+flate2 = "1.0"
+zstd = "0.13"
+
+# Memory-mapped files for large datasets
+memmap2 = "0.9"
+
+# Testing and benchmarking
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+quickcheck = "1.0"
+
+[features]
+default = ["all-jurisdictions", "full-text-search", "nlp-processing"]
+
+# Industry-specific libraries
+financial-services = []
+healthcare-pharmaceuticals = []
+energy-utilities = []
+manufacturing-industrial = []
+technology-digital = []
+environmental-sustainability = []
+labor-employment = []
+international-trade = []
+intellectual-property = []
+
+# Jurisdiction-specific content
+us-regulations = []
+eu-regulations = []
+uk-regulations = []
+canada-regulations = []
+australia-regulations = []
+japan-regulations = []
+china-regulations = []
+global-standards = []
+
+# All jurisdictions feature
+all-jurisdictions = [
+    "us-regulations",
+    "eu-regulations",
+    "uk-regulations",
+    "canada-regulations",
+    "australia-regulations",
+    "japan-regulations",
+    "china-regulations",
+    "global-standards"
+]
+
+# Processing capabilities
+full-text-search = ["tantivy"]
+nlp-processing = ["nlp", "stemmer"]
+ml-classification = ["linfa", "ndarray"]
+pdf-extraction = ["pdf-extract", "lopdf"]
+web-scraping = ["reqwest", "scraper"]
+fuzzy-matching = ["fuzzywuzzy", "strsim"]
+
+# Database backends
+postgres-backend = ["sqlx/postgres"]
+redis-backend = ["redis"]
+memory-backend = []
+
+# Performance optimizations
+compression = ["flate2", "zstd"]
+memory-mapping = ["memmap2"]
+parallel-processing = []
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+opt-level = 3
+
+[profile.dev]
+debug = true
+opt-level = 0
+
+[[bench]]
+name = "regulatory_search_benchmarks"
+harness = false
+
+[[bench]]
+name = "text_processing_benchmarks"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
