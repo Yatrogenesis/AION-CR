@@ -1,0 +1,160 @@
+[package]
+name = "aion-security"
+version = "1.0.0"
+edition = "2021"
+authors = ["AION-CR Team <team@aion-cr.enterprise.com>"]
+description = "AION-CR External Security and Precision Audit Framework"
+license = "MIT"
+repository = "https://github.com/aion-cr/security"
+keywords = ["security", "audit", "compliance", "penetration", "vulnerability"]
+categories = ["authentication", "cryptography", "web-programming"]
+
+[lib]
+name = "aion_security"
+path = "external-audit-framework.rs"
+
+[[bin]]
+name = "aion-security-audit"
+path = "src/bin/security_audit.rs"
+
+[[bin]]
+name = "aion-vulnerability-scanner"
+path = "src/bin/vulnerability_scanner.rs"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = { version = "0.7", features = ["full"] }
+
+# Serialization and data handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Error handling and utilities
+anyhow = "1.0"
+thiserror = "1.0"
+uuid = { version = "1.6", features = ["v4", "fast-rng"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Cryptography and security
+ring = "0.17"
+sha2 = "0.10"
+base64 = "0.21"
+x509-parser = "0.15"
+
+# Network security testing
+trust-dns-resolver = "0.23"
+rustls = "0.21"
+webpki-roots = "0.25"
+
+# HTTP clients for security testing
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+hyper = { version = "0.14", features = ["full"] }
+
+# Database for audit results
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
+
+# Configuration management
+config = "0.14"
+dotenvy = "0.15"
+
+# Data structures
+dashmap = "5.5"
+indexmap = "2.1"
+
+# CLI utilities
+clap = { version = "4.4", features = ["derive", "cargo"] }
+colored = "2.1"
+indicatif = "0.17"
+
+# Vulnerability databases
+rustsec = "0.28"
+cargo-audit = "0.18"
+
+# Report generation
+handlebars = "5.1"
+tera = "1.19"
+
+# XML/JSON processing for security reports
+quick-xml = "0.31"
+
+# Regular expressions for pattern matching
+regex = "1.10"
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+
+# Security scanning libraries
+nmap = "0.6"
+rustscan = "2.1"
+
+# Penetration testing tools
+metasploit = { version = "0.1", optional = true }
+nessus = { version = "0.1", optional = true }
+
+# OWASP ZAP integration
+zap = { version = "0.1", optional = true }
+
+# Static analysis tools
+clippy = { version = "0.1", optional = true }
+semgrep = { version = "0.1", optional = true }
+
+# Testing and benchmarking
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+mock_instant = "0.3"
+
+[features]
+default = ["basic-security", "vulnerability-scanning", "penetration-testing"]
+
+# Security testing categories
+basic-security = []
+vulnerability-scanning = ["rustsec", "cargo-audit"]
+penetration-testing = ["nmap", "rustscan"]
+advanced-testing = ["metasploit", "nessus", "zap"]
+static-analysis = ["clippy", "semgrep"]
+
+# Audit types
+infrastructure-audit = []
+application-audit = []
+network-audit = []
+cryptographic-audit = []
+compliance-audit = []
+
+# Third-party integrations
+big-four-firms = []
+security-vendors = []
+compliance-specialists = []
+academic-institutions = []
+government-agencies = []
+
+# Reporting formats
+pdf-reports = []
+html-reports = []
+json-reports = []
+xml-reports = []
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+debug = true
+opt-level = 0
+
+[[bench]]
+name = "security_benchmarks"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
