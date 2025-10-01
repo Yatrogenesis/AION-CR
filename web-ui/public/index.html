@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1976d2" />
+  <meta name="description" content="AION-CR - Autonomous Intelligence Operations Network for Compliance Regulation" />
+  <meta name="keywords" content="AI, compliance, regulation, autonomous, blockchain, quantum computing, machine learning" />
+  <meta name="author" content="AION-CR Development Team" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://aion-cr.ai/" />
+  <meta property="og:title" content="AION-CR - Autonomous Compliance System" />
+  <meta property="og:description" content="Advanced AI-powered regulatory compliance management with maximum autonomy level 255" />
+  <meta property="og:image" content="%PUBLIC_URL%/aion-og-image.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://aion-cr.ai/" />
+  <meta property="twitter:title" content="AION-CR - Autonomous Compliance System" />
+  <meta property="twitter:description" content="Advanced AI-powered regulatory compliance management with maximum autonomy level 255" />
+  <meta property="twitter:image" content="%PUBLIC_URL%/aion-og-image.png" />
+
+  <!-- PWA Configuration -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+  <!-- Preconnect to external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https:;
+    connect-src 'self' https: wss: ws:;
+    frame-src 'none';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+  " />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <!-- Performance optimizations -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+  <link rel="dns-prefetch" href="//api.aion-cr.ai" />
+
+  <title>AION-CR - Autonomous Intelligence Operations Network</title>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "AION-CR",
+    "description": "Autonomous Intelligence Operations Network for Compliance Regulation",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": "AION-CR Development Team"
+    },
+    "featureList": [
+      "AI-powered compliance monitoring",
+      "Autonomous agent management",
+      "Blockchain integration",
+      "Quantum computing optimization",
+      "Real-time regulatory analysis",
+      "Conflict resolution automation"
+    ]
+  }
+  </script>
+
+  <!-- Dark theme support -->
+  <script>
+    // Apply theme immediately to prevent flash
+    (function() {
+      const savedTheme = localStorage.getItem('aion_theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+      document.documentElement.classList.add(theme);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content',
+        theme === 'dark' ? '#0a0a0a' : '#1976d2'
+      );
+    })();
+  </script>
+
+  <style>
+    /* Critical CSS for initial load */
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+      color: #000000;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #0a0a0a;
+      color: #ffffff;
+    }
+
+    /* Loading screen */
+    #root {
+      min-height: 100vh;
+    }
+
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #0f1419 0%, #1a237e 50%, #000051 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+      background: linear-gradient(45deg, #1976d2, #42a5f5);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 900;
+      color: white;
+      box-shadow: 0 8px 32px rgba(25, 118, 210, 0.3);
+      animation: pulse 2s infinite;
+    }
+
+    .loading-text {
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 0.1em;
+    }
+
+    .loading-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top: 3px solid #42a5f5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Skip link for accessibility */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 6px;
+      background: #1976d2;
+      color: white;
+      padding: 8px;
+      text-decoration: none;
+      border-radius: 4px;
+      z-index: 10000;
+      font-weight: 600;
+    }
+
+    .skip-link:focus {
+      top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <noscript>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+      <h1>JavaScript Required</h1>
+      <p>AION-CR requires JavaScript to function properly. Please enable JavaScript in your browser and reload the page.</p>
+      <p>This application uses advanced AI and real-time features that depend on JavaScript.</p>
+    </div>
+  </noscript>
+
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Loading screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-logo">A</div>
+    <div class="loading-text">AION-CR</div>
+    <div class="loading-subtitle">Autonomous Intelligence Operations Network</div>
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Main application root -->
+  <div id="root" role="main" aria-label="AION-CR Application"></div>
+
+  <!-- Service Worker Registration -->
+  <script>
+    // Register service worker for PWA functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('SW registered: ', registration);
+          })
+          .catch(function(registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
+    // Hide loading screen when React app loads
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.classList.add('fade-out');
+          setTimeout(function() {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        }
+      }, 1000); // Minimum loading time for branding
+    });
+
+    // Performance monitoring
+    window.addEventListener('load', function() {
+      if ('performance' in window) {
+        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+        console.log('AION-CR Load Time:', loadTime + 'ms');
+
+        // Report to analytics if configured
+        if (window.gtag) {
+          gtag('event', 'timing_complete', {
+            name: 'load',
+            value: loadTime
+          });
+        }
+      }
+    });
+
+    // Error handling
+    window.addEventListener('error', function(e) {
+      console.error('AION-CR Error:', e.error);
+
+      // Show user-friendly error message
+      if (!document.querySelector('.error-fallback')) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-fallback';
+        errorDiv.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            z-index: 10001;
+          ">
+            <h2 style="color: #f44336; margin-bottom: 16px;">System Error</h2>
+            <p style="margin-bottom: 24px;">AION-CR encountered an unexpected error. Please refresh the page or contact support.</p>
+            <button onclick="window.location.reload()" style="
+              background: #1976d2;
+              color: white;
+              border: none;
+              padding: 12px 24px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: 600;
+            ">Reload Application</button>
+          </div>
+        `;
+        document.body.appendChild(errorDiv);
+      }
+    });
+
+    // Unhandled promise rejection handling
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('AION-CR Unhandled Promise Rejection:', e.reason);
+      e.preventDefault();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Ctrl/Cmd + K for quick search (when implemented)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        // Trigger search modal when implemented
+        console.log('Quick search triggered');
+      }
+
+      // Alt + D for dashboard
+      if (e.altKey && e.key === 'd') {
+        e.preventDefault();
+        window.location.hash = '#/dashboard';
+      }
+
+      // Alt + S for settings
+      if (e.altKey && e.key === 's') {
+        e.preventDefault();
+        window.location.hash = '#/settings';
+      }
+    });
+  </script>
+
+  <!-- Emergency fallback styles -->
+  <style>
+    .error-fallback {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    html.dark .error-fallback > div {
+      background: #1a1a1a !important;
+      color: white !important;
+    }
+  </style>
+</body>
+</html>

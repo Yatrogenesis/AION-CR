@@ -1,0 +1,166 @@
+[package]
+name = "aion-certifications"
+version = "1.0.0"
+edition = "2021"
+authors = ["AION-CR Team <team@aion-cr.enterprise.com>"]
+description = "AION-CR Formal Certification Framework - Comprehensive compliance certification system"
+license = "MIT"
+repository = "https://github.com/aion-cr/certifications"
+keywords = ["certification", "compliance", "security", "audit", "governance"]
+categories = ["authentication", "cryptography", "web-programming"]
+
+[lib]
+name = "aion_certifications"
+path = "formal_certification_framework.rs"
+
+[[bin]]
+name = "aion-certification-manager"
+path = "src/bin/certification_manager.rs"
+
+[[bin]]
+name = "aion-audit-runner"
+path = "src/bin/audit_runner.rs"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = { version = "0.7", features = ["full"] }
+
+# Serialization and data handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Error handling and utilities
+anyhow = "1.0"
+thiserror = "1.0"
+uuid = { version = "1.6", features = ["v4", "fast-rng"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Cryptography for evidence integrity
+ring = "0.17"
+sha2 = "0.10"
+base64 = "0.21"
+
+# PDF generation for certification reports
+printpdf = "0.6"
+lopdf = "0.32"
+
+# Document template processing
+handlebars = "5.1"
+tera = "1.19"
+
+# Database for audit trails
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
+
+# Configuration management
+config = "0.14"
+dotenvy = "0.15"
+
+# HTTP client for external auditor APIs
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Data structures
+dashmap = "5.5"
+indexmap = "2.1"
+
+# CLI utilities
+clap = { version = "4.4", features = ["derive", "cargo"] }
+colored = "2.1"
+indicatif = "0.17"
+
+# Email notifications
+lettre = "0.11"
+
+# Calendar and scheduling
+ical = "0.8"
+
+# Risk analysis and statistics
+statrs = "0.16"
+
+# XML processing for regulatory formats
+quick-xml = "0.31"
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+
+# Security scanning integration
+semver = "1.0"
+
+# Legal document processing
+regex = "1.10"
+
+# Workflow automation
+workflow = "0.6"
+
+# Testing
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+mock_instant = "0.3"
+
+[features]
+default = ["all-certifications", "automated-evidence", "risk-assessment", "documentation"]
+
+# Certification standards
+all-certifications = [
+    "iso-certifications",
+    "security-certifications",
+    "privacy-certifications",
+    "financial-certifications",
+    "healthcare-certifications",
+    "quality-certifications"
+]
+
+iso-certifications = []
+security-certifications = []
+privacy-certifications = []
+financial-certifications = []
+healthcare-certifications = []
+quality-certifications = []
+
+# Framework capabilities
+automated-evidence = ["quick-xml", "regex"]
+risk-assessment = ["statrs"]
+documentation = ["printpdf", "lopdf", "handlebars", "tera"]
+notifications = ["lettre"]
+scheduling = ["ical"]
+workflow-automation = ["workflow"]
+
+# Integration features
+external-auditors = ["reqwest"]
+cloud-storage = []
+enterprise-sso = []
+
+# Compliance frameworks
+sox-compliance = []
+gdpr-compliance = []
+hipaa-compliance = []
+pci-compliance = []
+iso27001-compliance = []
+soc2-compliance = []
+fedramp-compliance = []
+nist-compliance = []
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+debug = true
+opt-level = 0
+
+[[bench]]
+name = "certification_benchmarks"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
