@@ -28,6 +28,7 @@ members = [
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_yaml = "0.9"
 uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
@@ -35,6 +36,29 @@ tracing-subscriber = "0.3"
 anyhow = "1.0"
 thiserror = "1.0"
 clap = { version = "4.0", features = ["derive"] }
+
+# HTTP client for API integration
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+# Async runtime utilities
+futures = "0.3"
+# Text processing and NLP
+regex = "1.0"
+pulldown-cmark = "0.9"  # Markdown processing
+# Search and indexing
+tantivy = "0.20"  # Full-text search
+# Database connectivity
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+# Template engine for report generation
+handlebars = "4.0"
+# Rate limiting
+governor = "0.5"
+# Configuration management
+config = "0.13"
+# Logging and monitoring
+log = "0.4"
+env_logger = "0.10"
+
+# AION modules
 aion-cli = { path = "aion-cli" }
 aion-core = { path = "aion-core" }
 aion-compliance = { path = "aion-compliance" }

@@ -1,0 +1,559 @@
+# AION-CR Automated Regulatory Discovery System Configuration
+# Real-time monitoring and detection of new regulatory publications globally
+
+version: "1.0.0"
+last_updated: "2025-01-15"
+
+# Global Discovery Settings
+global_discovery:
+  enabled: true
+  discovery_mode: "comprehensive"  # comprehensive | selective | targeted
+  min_confidence_threshold: 0.75
+  max_concurrent_scans: 50
+  deep_scan_enabled: true
+  cross_reference_discovery: true
+  semantic_relationship_detection: true
+
+# Language Support Configuration
+language_support:
+  primary_languages:
+    - code: "en"
+      name: "English"
+      ml_model: "en_regulatory_v2.1"
+      confidence_boost: 1.0
+    - code: "es"
+      name: "Spanish"
+      ml_model: "es_regulatory_v1.8"
+      confidence_boost: 0.95
+    - code: "fr"
+      name: "French"
+      ml_model: "fr_regulatory_v1.6"
+      confidence_boost: 0.90
+    - code: "de"
+      name: "German"
+      ml_model: "de_regulatory_v1.7"
+      confidence_boost: 0.92
+
+  secondary_languages:
+    - code: "it"
+      name: "Italian"
+      ml_model: "it_regulatory_v1.4"
+    - code: "pt"
+      name: "Portuguese"
+      ml_model: "pt_regulatory_v1.3"
+    - code: "nl"
+      name: "Dutch"
+      ml_model: "nl_regulatory_v1.2"
+
+# Real-time Monitoring Sources
+real_time_sources:
+  # United States Federal Sources
+  federal_reserve_board:
+    name: "Federal Reserve Board Announcements"
+    base_url: "https://www.federalreserve.gov"
+    endpoints:
+      - "/newsevents/pressreleases"
+      - "/newsevents/speeches"
+    monitoring_method: "rss_feed"
+    feed_url: "https://www.federalreserve.gov/feeds/press_all.xml"
+    scan_interval_seconds: 300
+    priority: "critical"
+    keywords:
+      - "regulation"
+      - "banking"
+      - "monetary policy"
+      - "supervision"
+    exclude_keywords:
+      - "employment"
+      - "economic projections"
+
+  sec_press_releases:
+    name: "SEC Press Releases"
+    base_url: "https://www.sec.gov"
+    endpoints:
+      - "/news/press-release"
+    monitoring_method: "web_scraping"
+    scan_interval_seconds: 300
+    priority: "critical"
+    content_selectors:
+      title: "h1.page-title"
+      content: ".field-name-body"
+      date: ".date-display-single"
+    keywords:
+      - "rule"
+      - "regulation"
+      - "enforcement"
+      - "guidance"
+
+  # European Sources
+  ecb_press_releases:
+    name: "European Central Bank Press Releases"
+    base_url: "https://www.ecb.europa.eu"
+    endpoints:
+      - "/press/pr"
+    monitoring_method: "rss_feed"
+    feed_url: "https://www.ecb.europa.eu/rss/pr.xml"
+    scan_interval_seconds: 600
+    priority: "critical"
+    languages: ["en", "de", "fr"]
+
+  esma_news:
+    name: "ESMA News and Publications"
+    base_url: "https://www.esma.europa.eu"
+    endpoints:
+      - "/news-and-events/esma-news"
+      - "/policy-activities/consultations"
+    monitoring_method: "api_integration"
+    api_endpoint: "https://registers.esma.europa.eu/solr/esma_registers_firds_public/select"
+    scan_interval_seconds: 900
+    priority: "high"
+
+  # UK Sources
+  fca_news:
+    name: "FCA News and Publications"
+    base_url: "https://www.fca.org.uk"
+    endpoints:
+      - "/news"
+      - "/publications"
+    monitoring_method: "web_scraping"
+    scan_interval_seconds: 600
+    priority: "critical"
+    content_selectors:
+      title: "h1"
+      content: ".content-body"
+      category: ".content-type"
+
+# Daily Monitoring Sources
+daily_sources:
+  # US Regulatory Agencies
+  occ_bulletins:
+    name: "OCC Bulletins and Interpretive Letters"
+    base_url: "https://www.occ.treas.gov"
+    endpoints:
+      - "/news-issuances/bulletins"
+      - "/news-issuances/interpretive-letters"
+    monitoring_method: "web_scraping"
+    scan_time: "09:00:00 UTC"
+    priority: "high"
+
+  fdic_letters:
+    name: "FDIC Financial Institution Letters"
+    base_url: "https://www.fdic.gov"
+    endpoints:
+      - "/news/financial-institution-letters"
+    monitoring_method: "web_scraping"
+    scan_time: "10:00:00 UTC"
+    priority: "high"
+
+  cftc_letters:
+    name: "CFTC Staff Letters"
+    base_url: "https://www.cftc.gov"
+    endpoints:
+      - "/law-regulation/staff-letters"
+    monitoring_method: "web_scraping"
+    scan_time: "11:00:00 UTC"
+    priority: "medium"
+
+  # European Daily Sources
+  eba_news:
+    name: "EBA News and Communications"
+    base_url: "https://www.eba.europa.eu"
+    endpoints:
+      - "/news-and-communications"
+      - "/regulation-and-policy"
+    monitoring_method: "web_scraping"
+    scan_time: "08:00:00 UTC"
+    priority: "high"
+
+  eiopa_news:
+    name: "EIOPA News"
+    base_url: "https://www.eiopa.europa.eu"
+    endpoints:
+      - "/browse/news"
+    monitoring_method: "rss_feed"
+    feed_url: "https://www.eiopa.europa.eu/news-and-events.xml"
+    scan_time: "08:30:00 UTC"
+    priority: "medium"
+
+# Weekly Deep Scan Sources
+weekly_sources:
+  bis_publications:
+    name: "BIS Publications and Papers"
+    base_url: "https://www.bis.org"
+    endpoints:
+      - "/publ"
+      - "/bcbs/publ"
+    monitoring_method: "document_scanning"
+    scan_day: "monday"
+    scan_time: "06:00:00 UTC"
+    priority: "medium"
+    document_types:
+      - "pdf"
+      - "html"
+
+  fsb_publications:
+    name: "Financial Stability Board Publications"
+    base_url: "https://www.fsb.org"
+    endpoints:
+      - "/publications"
+    monitoring_method: "document_scanning"
+    scan_day: "tuesday"
+    scan_time: "07:00:00 UTC"
+    priority: "medium"
+
+  iosco_news:
+    name: "IOSCO News and Publications"
+    base_url: "https://www.iosco.org"
+    endpoints:
+      - "/news"
+      - "/library"
+    monitoring_method: "web_scraping"
+    scan_day: "wednesday"
+    scan_time: "08:00:00 UTC"
+    priority: "medium"
+
+# Detection Patterns
+detection_patterns:
+  # High-confidence regulation patterns
+  regulation_patterns:
+    - pattern_id: "us_federal_regulation"
+      regex: "\\b(?:CFR|Code of Federal Regulations)\\s+(?:Title\\s+)?\\d+\\s+(?:Part\\s+)?\\d+"
+      confidence_weight: 0.95
+      applicable_jurisdictions: ["US"]
+      context_requirements:
+        min_document_length: 500
+        required_sections: ["authority", "purpose"]
+
+    - pattern_id: "eu_directive_regulation"
+      regex: "\\b(?:Directive|Regulation)\\s+\\(?(?:EU|EC)\\)?\\s+\\d{4}/\\d+"
+      confidence_weight: 0.92
+      applicable_jurisdictions: ["EU"]
+      context_requirements:
+        min_document_length: 800
+        required_sections: ["recitals", "articles"]
+
+    - pattern_id: "uk_statutory_instrument"
+      regex: "\\b(?:SI|Statutory Instrument)\\s+\\d{4}/\\d+"
+      confidence_weight: 0.90
+      applicable_jurisdictions: ["UK"]
+
+  # Amendment detection patterns
+  amendment_patterns:
+    - pattern_id: "amendment_general"
+      regex: "\\b(?:amend|amending|amendment)\\b.*\\b(?:regulation|directive|rule|section)\\b"
+      confidence_weight: 0.85
+      context_requirements:
+        max_distance_words: 50
+
+    - pattern_id: "revision_pattern"
+      regex: "\\b(?:revise|revising|revision)\\b.*\\b(?:of|to)\\b"
+      confidence_weight: 0.80
+
+  # Consultation patterns
+  consultation_patterns:
+    - pattern_id: "consultation_paper"
+      regex: "\\b(?:consultation|comment|feedback)\\s+(?:paper|document|period)\\b"
+      confidence_weight: 0.75
+      context_requirements:
+        required_phrases: ["public comment", "feedback", "consultation period"]
+
+# Content Classification
+classification_rules:
+  document_types:
+    regulation:
+      indicators:
+        - "shall"
+        - "must"
+        - "required"
+        - "prohibited"
+        - "penalty"
+      confidence_boost: 0.1
+
+    guidance:
+      indicators:
+        - "should"
+        - "recommend"
+        - "guidance"
+        - "best practice"
+        - "consider"
+      confidence_boost: 0.05
+
+    consultation:
+      indicators:
+        - "public comment"
+        - "consultation"
+        - "feedback"
+        - "comment period"
+      confidence_boost: 0.08
+
+# Quality Filters
+quality_filters:
+  minimum_content_length: 200
+  maximum_content_length: 1000000
+  exclude_file_types:
+    - "exe"
+    - "zip"
+    - "rar"
+  include_file_types:
+    - "pdf"
+    - "html"
+    - "docx"
+    - "txt"
+
+  false_positive_filters:
+    - pattern: "\\b(?:job|employment|vacancy)\\b"
+      action: "exclude"
+      confidence_penalty: 0.3
+    - pattern: "\\b(?:event|conference|meeting)\\b"
+      action: "review"
+      confidence_penalty: 0.1
+
+# Change Detection Settings
+change_detection:
+  sensitivity_levels:
+    high:
+      min_change_percentage: 5
+      detect_structural_changes: true
+      detect_content_additions: true
+      detect_content_removals: true
+    medium:
+      min_change_percentage: 15
+      detect_structural_changes: true
+      detect_content_additions: true
+      detect_content_removals: false
+    low:
+      min_change_percentage: 30
+      detect_structural_changes: false
+      detect_content_additions: true
+      detect_content_removals: false
+
+  baseline_update_frequency:
+    real_time_sources: "daily"
+    daily_sources: "weekly"
+    weekly_sources: "monthly"
+
+# Alert Configuration
+alerts:
+  priority_levels:
+    critical:
+      conditions:
+        - "new_regulation"
+        - "emergency_amendment"
+        - "enforcement_action"
+      notification_channels:
+        - "email_immediate"
+        - "slack_critical"
+        - "webhook_urgent"
+      escalation_time_minutes: 15
+
+    high:
+      conditions:
+        - "guidance_update"
+        - "consultation_opening"
+        - "policy_statement"
+      notification_channels:
+        - "email_daily_digest"
+        - "slack_updates"
+      escalation_time_minutes: 60
+
+    medium:
+      conditions:
+        - "technical_standard"
+        - "interpretive_letter"
+      notification_channels:
+        - "email_weekly_digest"
+      escalation_time_minutes: 1440  # 24 hours
+
+  notification_channels:
+    email_immediate:
+      enabled: true
+      recipients:
+        - "regulatory-team@aion-cr.ai"
+        - "compliance-alerts@aion-cr.ai"
+      template: "critical_discovery"
+
+    slack_critical:
+      enabled: true
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      channel: "#regulatory-alerts"
+      template: "critical_alert"
+
+    webhook_urgent:
+      enabled: true
+      endpoint: "${WEBHOOK_ENDPOINT}"
+      headers:
+        Authorization: "Bearer ${WEBHOOK_TOKEN}"
+        Content-Type: "application/json"
+
+# Machine Learning Configuration
+ml_models:
+  document_classification:
+    model_name: "aion_regulatory_classifier_v3.2"
+    model_path: "./models/regulatory_classifier.onnx"
+    confidence_threshold: 0.7
+    batch_size: 32
+    max_sequence_length: 512
+
+  content_similarity:
+    model_name: "aion_similarity_detector_v2.1"
+    model_path: "./models/similarity_detector.onnx"
+    similarity_threshold: 0.85
+    vector_dimension: 768
+
+  impact_prediction:
+    model_name: "aion_impact_predictor_v1.9"
+    model_path: "./models/impact_predictor.onnx"
+    prediction_threshold: 0.6
+    features:
+      - "document_length"
+      - "jurisdiction"
+      - "regulatory_body"
+      - "document_type"
+      - "stakeholder_count"
+      - "compliance_requirements_count"
+
+# Performance Configuration
+performance:
+  max_concurrent_scans: 50
+  request_timeout_seconds: 30
+  max_retry_attempts: 3
+  retry_delay_seconds: 5
+  rate_limiting:
+    requests_per_minute: 100
+    burst_capacity: 20
+
+  caching:
+    enable_content_cache: true
+    cache_ttl_hours: 24
+    max_cache_size_mb: 1024
+
+  resource_limits:
+    max_memory_usage_mb: 4096
+    max_cpu_usage_percent: 80
+    max_disk_usage_mb: 10240
+
+# Monitoring and Analytics
+monitoring:
+  metrics_collection:
+    enabled: true
+    collection_interval_seconds: 60
+    retention_days: 90
+
+  health_checks:
+    enabled: true
+    check_interval_seconds: 300
+    endpoints:
+      - "database_connection"
+      - "ml_model_availability"
+      - "source_accessibility"
+      - "api_rate_limits"
+
+  reporting:
+    daily_report: true
+    weekly_summary: true
+    monthly_analytics: true
+    custom_dashboards: true
+
+# Database Configuration
+database:
+  discovery_storage:
+    connection_string: "${DISCOVERY_DB_URL}"
+    schema: "regulatory_discovery"
+    tables:
+      discoveries: "discovered_documents"
+      analyses: "content_analyses"
+      impacts: "impact_assessments"
+      alerts: "discovery_alerts"
+
+  performance_optimization:
+    enable_indexing: true
+    index_fields:
+      - "discovery_timestamp"
+      - "jurisdiction"
+      - "document_type"
+      - "confidence_score"
+    enable_partitioning: true
+    partition_by: "discovery_date"
+
+# Security Configuration
+security:
+  data_protection:
+    encrypt_sensitive_content: true
+    anonymize_personal_data: true
+    secure_api_keys: true
+
+  access_control:
+    enable_rbac: true
+    roles:
+      - "discovery_admin"
+      - "discovery_analyst"
+      - "discovery_viewer"
+
+  audit_logging:
+    enabled: true
+    log_level: "INFO"
+    log_retention_days: 365
+    sensitive_operations:
+      - "configuration_changes"
+      - "model_updates"
+      - "alert_configuration"
+
+# Integration Configuration
+integrations:
+  existing_systems:
+    aion_compliance_engine:
+      enabled: true
+      sync_discoveries: true
+      auto_trigger_compliance_checks: true
+      integration_endpoint: "http://localhost:8080/api/v1/compliance/discovery"
+
+    aion_regulatory_database:
+      enabled: true
+      auto_import_discoveries: true
+      quality_threshold: 0.8
+      import_endpoint: "http://localhost:8080/api/v1/regulatory/import"
+
+  external_services:
+    legal_research_apis:
+      westlaw:
+        enabled: false
+        api_key: "${WESTLAW_API_KEY}"
+      lexisnexis:
+        enabled: false
+        api_key: "${LEXISNEXIS_API_KEY}"
+
+    notification_services:
+      sendgrid:
+        enabled: true
+        api_key: "${SENDGRID_API_KEY}"
+      slack:
+        enabled: true
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+
+# Error Handling
+error_handling:
+  retry_policies:
+    network_errors:
+      max_retries: 3
+      backoff_strategy: "exponential"
+      base_delay_seconds: 2
+
+    parsing_errors:
+      max_retries: 1
+      log_for_review: true
+      fallback_to_raw_content: true
+
+    ml_model_errors:
+      max_retries: 2
+      fallback_to_rule_based: true
+      alert_on_persistent_failures: true
+
+  logging:
+    log_level: "INFO"
+    log_format: "json"
+    log_rotation:
+      max_file_size_mb: 100
+      max_files: 10
+    error_aggregation:
+      enabled: true
+      aggregation_window_minutes: 15

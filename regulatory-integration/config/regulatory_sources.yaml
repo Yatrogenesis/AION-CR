@@ -1,0 +1,376 @@
+# AION-CR Regulatory Sources Configuration
+# Complete API integration configuration for all regulatory sources
+
+version: "1.0.0"
+last_updated: "2025-01-15"
+
+# API Source Configurations
+api_sources:
+
+  # United States Federal Sources
+  federal_reserve_fred:
+    name: "Federal Reserve Economic Data"
+    base_url: "https://api.stlouisfed.org/fred"
+    api_key_required: true
+    api_key_env: "FRED_API_KEY"
+    rate_limit: 120  # requests per minute
+    update_frequency: "real_time"
+    priority: 1
+    enabled: true
+    endpoints:
+      - path: "/series"
+        description: "Economic data series"
+      - path: "/sources"
+        description: "Data sources"
+      - path: "/releases"
+        description: "Economic releases"
+    data_format: "json"
+    timeout_seconds: 30
+    retry_attempts: 3
+
+  sec_edgar:
+    name: "SEC EDGAR Database"
+    base_url: "https://data.sec.gov/api"
+    api_key_required: false
+    rate_limit: 10  # requests per second
+    update_frequency: "real_time"
+    priority: 1
+    enabled: true
+    endpoints:
+      - path: "/submissions"
+        description: "Company submissions"
+      - path: "/companyfacts"
+        description: "Company facts"
+      - path: "/frames"
+        description: "XBRL frames"
+    data_format: "json"
+    timeout_seconds: 30
+    retry_attempts: 3
+    headers:
+      User-Agent: "AION-CR Compliance System contact@aion-cr.ai"
+
+  ecfr:
+    name: "Electronic Code of Federal Regulations"
+    base_url: "https://www.ecfr.gov/api/versioner/v1"
+    api_key_required: false
+    rate_limit: 60  # requests per minute
+    update_frequency: "daily"
+    priority: 2
+    enabled: true
+    endpoints:
+      - path: "/full"
+        description: "Full CFR structure"
+      - path: "/structure"
+        description: "CFR structure"
+      - path: "/hierarchy"
+        description: "CFR hierarchy"
+    data_format: "json"
+    timeout_seconds: 45
+    retry_attempts: 3
+
+  regulations_gov:
+    name: "Regulations.gov Federal Rulemaking"
+    base_url: "https://api.regulations.gov/v4"
+    api_key_required: true
+    api_key_env: "REGULATIONS_GOV_API_KEY"
+    rate_limit: 1000  # requests per hour
+    update_frequency: "real_time"
+    priority: 1
+    enabled: true
+    endpoints:
+      - path: "/documents"
+        description: "Regulatory documents"
+      - path: "/comments"
+        description: "Public comments"
+      - path: "/dockets"
+        description: "Regulatory dockets"
+    data_format: "json"
+    timeout_seconds: 30
+    retry_attempts: 3
+
+  fdic_bankfind:
+    name: "FDIC BankFind Suite"
+    base_url: "https://banks.data.fdic.gov/api"
+    api_key_required: false
+    rate_limit: 100  # requests per minute
+    update_frequency: "quarterly"
+    priority: 3
+    enabled: true
+    endpoints:
+      - path: "/financials"
+        description: "Bank financial data"
+      - path: "/institutions"
+        description: "Institution information"
+      - path: "/locations"
+        description: "Bank locations"
+    data_format: "json"
+    timeout_seconds: 45
+    retry_attempts: 3
+
+  # International Sources
+  ecb:
+    name: "European Central Bank Data Portal"
+    base_url: "https://data-api.ecb.europa.eu/service"
+    api_key_required: false
+    rate_limit: 300  # fair use
+    update_frequency: "real_time"
+    priority: 2
+    enabled: true
+    endpoints:
+      - path: "/data"
+        description: "Statistical data"
+      - path: "/metadata"
+        description: "Metadata"
+    data_format: "sdmx"
+    timeout_seconds: 60
+    retry_attempts: 3
+
+  bis:
+    name: "Bank for International Settlements"
+    base_url: "https://stats.bis.org/api/v1"
+    api_key_required: false
+    rate_limit: 100  # fair use
+    update_frequency: "monthly"
+    priority: 3
+    enabled: true
+    endpoints:
+      - path: "/dataflow"
+        description: "Available dataflows"
+      - path: "/data"
+        description: "Statistical data"
+    data_format: "sdmx"
+    timeout_seconds: 60
+    retry_attempts: 3
+
+  world_bank:
+    name: "World Bank Open Data"
+    base_url: "https://api.worldbank.org/v2"
+    api_key_required: false
+    rate_limit: 60  # requests per minute
+    update_frequency: "quarterly"
+    priority: 4
+    enabled: true
+    endpoints:
+      - path: "/countries"
+        description: "Country information"
+      - path: "/indicators"
+        description: "Development indicators"
+    data_format: "json"
+    timeout_seconds: 45
+    retry_attempts: 3
+
+  imf:
+    name: "International Monetary Fund Data"
+    base_url: "https://data.imf.org/api"
+    api_key_required: false
+    rate_limit: 100  # fair use
+    update_frequency: "real_time"
+    priority: 3
+    enabled: true
+    endpoints:
+      - path: "/CompactData"
+        description: "Compact data format"
+      - path: "/GenericData"
+        description: "Generic data format"
+    data_format: "sdmx"
+    timeout_seconds: 60
+    retry_attempts: 3
+
+  # Mexico Sources
+  mexico_cnbv:
+    name: "Comisión Nacional Bancaria y de Valores"
+    base_url: "https://www.cnbv.gob.mx/api"
+    api_key_required: true
+    api_key_env: "CNBV_API_KEY"
+    rate_limit: 60  # requests per minute
+    update_frequency: "daily"
+    priority: 2
+    enabled: true
+    endpoints:
+      - path: "/regulations"
+        description: "Banking regulations"
+      - path: "/institutions"
+        description: "Financial institutions"
+    data_format: "json"
+    timeout_seconds: 45
+    retry_attempts: 3
+
+  mexico_banxico:
+    name: "Banco de México"
+    base_url: "https://www.banxico.org.mx/SieAPI"
+    api_key_required: true
+    api_key_env: "BANXICO_API_KEY"
+    rate_limit: 500  # requests per day
+    update_frequency: "daily"
+    priority: 2
+    enabled: true
+    endpoints:
+      - path: "/series"
+        description: "Economic series"
+      - path: "/metadata"
+        description: "Series metadata"
+    data_format: "json"
+    timeout_seconds: 45
+    retry_attempts: 3
+
+# Processing Configuration
+processing:
+  # Text cleanup rules
+  text_cleanup:
+    remove_html_tags: true
+    normalize_whitespace: true
+    fix_encoding_issues: true
+    standardize_quotes: true
+    remove_page_breaks: true
+    preserve_formatting:
+      - "code"
+      - "pre"
+      - "table"
+
+  # Semantic tagging
+  semantic_tagging:
+    enable_ai_tagging: true
+    confidence_threshold: 0.8
+    tag_categories:
+      - "compliance_area"
+      - "risk_type"
+      - "industry_sector"
+      - "regulatory_function"
+      - "stakeholder"
+    relationship_extraction: true
+    entity_recognition: true
+
+  # Cross-referencing
+  cross_referencing:
+    auto_detect_references: true
+    citation_patterns:
+      - "\\d+ U\\.S\\.C\\. \\d+"
+      - "\\d+ CFR \\d+"
+      - "Section \\d+\\."
+      - "Part \\d+"
+    cross_regulation_links: true
+    internal_section_links: true
+
+  # Validation rules
+  validation:
+    schema_validation: true
+    content_completeness: 0.9
+    cross_reference_validation: true
+    temporal_consistency: true
+    authority_verification: true
+
+# Output Configuration
+output_formats:
+  markdown:
+    enabled: true
+    template: "regulation_template.md"
+    include_metadata: true
+    cross_reference_links: true
+    output_directory: "formats/markdown"
+
+  rust_structures:
+    enabled: true
+    optimization_level: "maximum"
+    include_ai_tags: true
+    semantic_analysis: true
+    output_directory: "formats/rust-structures"
+
+  json:
+    enabled: true
+    pretty_print: true
+    include_raw_text: false
+    output_directory: "formats/json"
+
+  database:
+    enabled: true
+    connection_string: "${DATABASE_URL}"
+    schema_version: "1.0.0"
+
+# Storage Configuration
+storage:
+  base_directory: "./regulatory-data"
+  backup_directory: "./backups"
+  temp_directory: "./temp"
+  compression_enabled: true
+  encryption_enabled: true
+  retention_days: 2555  # 7 years
+
+# Quality Thresholds
+quality:
+  minimum_completeness: 0.95
+  maximum_error_rate: 0.05
+  required_fields:
+    - "title"
+    - "authority"
+    - "effective_date"
+    - "content"
+  validation_rules:
+    - "authority_verification"
+    - "date_consistency"
+    - "content_completeness"
+
+# Update Scheduling
+scheduling:
+  real_time_sources:
+    - "federal_reserve_fred"
+    - "sec_edgar"
+    - "regulations_gov"
+    - "ecb"
+    - "imf"
+
+  daily_sources:
+    - "ecfr"
+    - "mexico_cnbv"
+    - "mexico_banxico"
+
+  weekly_sources: []
+
+  monthly_sources:
+    - "bis"
+
+  quarterly_sources:
+    - "fdic_bankfind"
+    - "world_bank"
+
+  on_demand_sources: []
+
+# Monitoring and Alerts
+monitoring:
+  health_check_interval: 300  # seconds
+  alert_thresholds:
+    error_rate: 0.1
+    response_time: 30  # seconds
+    quality_score: 0.8
+
+  notifications:
+    email_enabled: true
+    slack_enabled: true
+    webhook_enabled: true
+
+# Security Configuration
+security:
+  api_keys:
+    encryption_enabled: true
+    rotation_days: 90
+
+  data_protection:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    access_logging: true
+
+  rate_limiting:
+    enable_circuit_breaker: true
+    failure_threshold: 5
+    recovery_timeout: 300  # seconds
+
+# Performance Configuration
+performance:
+  concurrent_requests: 10
+  batch_size: 100
+  cache_ttl: 3600  # seconds
+  connection_pool_size: 20
+
+  optimization:
+    enable_compression: true
+    enable_caching: true
+    enable_indexing: true
