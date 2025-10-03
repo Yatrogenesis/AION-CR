@@ -1,4 +1,4 @@
-# 🚀 AION-CR Deployment Guide
+#  AION-CR Deployment Guide
 
 ## Quick Start
 
