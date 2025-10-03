@@ -294,6 +294,249 @@ impl ChinaLegalSystemRegistry {
     }
 }
 
+impl CurrentChineseGovernment {
+    fn initialize_xi_administration() -> Self {
+        Self {
+            general_secretary: ChineseGeneralSecretary {
+                name: "Xi Jinping".to_string(),
+                name_zh: "习近平".to_string(),
+                in_office_since: NaiveDate::from_ymd_opt(2012, 11, 15).unwrap(),
+                age: 71,
+                birthplace: "Beijing, China".to_string(),
+                previous_positions: vec![
+                    "Party Secretary of Shanghai (2007)".to_string(),
+                    "Party Secretary of Zhejiang (2002-2007)".to_string(),
+                    "Governor of Fujian (1999-2002)".to_string(),
+                    "Vice President of China (2008-2013)".to_string(),
+                ],
+                party_rank: "General Secretary of CCP Central Committee".to_string(),
+            },
+            president: ChinesePresident {
+                name: "Xi Jinping".to_string(),
+                name_zh: "习近平".to_string(),
+                in_office_since: NaiveDate::from_ymd_opt(2013, 3, 14).unwrap(),
+                term_limit_abolished: true,
+            },
+            premier: ChinesePremier {
+                name: "Li Qiang".to_string(),
+                name_zh: "李强".to_string(),
+                in_office_since: NaiveDate::from_ymd_opt(2023, 3, 11).unwrap(),
+                responsible_for: vec![
+                    "State Council executive leadership".to_string(),
+                    "Economic policy implementation".to_string(),
+                    "Government administration".to_string(),
+                ],
+            },
+            politburo_standing_committee: PolitburoStandingCommittee {
+                members: vec![
+                    PolitburoMember {
+                        name: "Xi Jinping".to_string(),
+                        name_zh: "习近平".to_string(),
+                        position: "General Secretary, President, CMC Chairman".to_string(),
+                        rank: 1,
+                        age: 71,
+                    },
+                    PolitburoMember {
+                        name: "Li Qiang".to_string(),
+                        name_zh: "李强".to_string(),
+                        position: "Premier of State Council".to_string(),
+                        rank: 2,
+                        age: 65,
+                    },
+                    PolitburoMember {
+                        name: "Zhao Leji".to_string(),
+                        name_zh: "赵乐际".to_string(),
+                        position: "Chairman of NPC Standing Committee".to_string(),
+                        rank: 3,
+                        age: 67,
+                    },
+                    PolitburoMember {
+                        name: "Wang Huning".to_string(),
+                        name_zh: "王沪宁".to_string(),
+                        position: "Chairman of CPPCC".to_string(),
+                        rank: 4,
+                        age: 69,
+                    },
+                    PolitburoMember {
+                        name: "Cai Qi".to_string(),
+                        name_zh: "蔡奇".to_string(),
+                        position: "Secretary of Central Secretariat".to_string(),
+                        rank: 5,
+                        age: 68,
+                    },
+                    PolitburoMember {
+                        name: "Ding Xuexiang".to_string(),
+                        name_zh: "丁薛祥".to_string(),
+                        position: "Executive Vice Premier".to_string(),
+                        rank: 6,
+                        age: 62,
+                    },
+                    PolitburoMember {
+                        name: "Li Xi".to_string(),
+                        name_zh: "李希".to_string(),
+                        position: "Secretary of Central Commission for Discipline Inspection".to_string(),
+                        rank: 7,
+                        age: 67,
+                    },
+                ],
+                total_members: 7,
+            },
+            state_council: ChineseStateCouncil {
+                premier: "Li Qiang".to_string(),
+                vice_premiers: vec![
+                    "Ding Xuexiang".to_string(),
+                    "He Lifeng".to_string(),
+                    "Zhang Guoqing".to_string(),
+                    "Liu Guozhong".to_string(),
+                ],
+                ministers: ChineseMinistersCouncil {
+                    foreign_affairs: "Wang Yi".to_string(),
+                    national_defense: "Dong Jun".to_string(),
+                    public_security: "Wang Xiaohong".to_string(),
+                    state_security: "Chen Yixin".to_string(),
+                    finance: "Lan Fo'an".to_string(),
+                    commerce: "Wang Wentao".to_string(),
+                    education: "Huai Jinpeng".to_string(),
+                    science_technology: "Wang Zhigang".to_string(),
+                    industry_information: "Jin Zhuanglong".to_string(),
+                    justice: "He Rong".to_string(),
+                    human_resources: "Wang Xiaoping".to_string(),
+                    natural_resources: "Wang Guanghua".to_string(),
+                    ecology_environment: "Huang Runqiu".to_string(),
+                    housing_construction: "Ni Hong".to_string(),
+                    transport: "Li Xiaopeng".to_string(),
+                    water_resources: "Li Guoying".to_string(),
+                    agriculture_rural: "Tang Renjian".to_string(),
+                    culture_tourism: "Sun Yeli".to_string(),
+                    health: "Ma Xiaowei".to_string(),
+                    veterans_affairs: "Pei Jinjia".to_string(),
+                    emergency_management: "Wang Xiangxi".to_string(),
+                },
+            },
+            npc: NationalPeoplesCongress {
+                chairman: "Zhao Leji".to_string(),
+                vice_chairmen: vec![
+                    "Li Hongzhong".to_string(),
+                    "Wang Dongming".to_string(),
+                    "Xiao Jie".to_string(),
+                    "Zheng Jianbang".to_string(),
+                    "Ding Zhongli".to_string(),
+                    "Hao Mingjin".to_string(),
+                    "Cai Dafeng".to_string(),
+                    "Wu Weihua".to_string(),
+                    "Tiemuer Dawamat".to_string(),
+                    "Losang Jamcan".to_string(),
+                    "Su Hui".to_string(),
+                    "Pak Hak Shun".to_string(),
+                    "He Houhua".to_string(),
+                    "Peng Qinghua".to_string(),
+                ],
+                total_delegates: 2980,
+                current_session: 14,
+                term_years: 5,
+            },
+            cmc: CentralMilitaryCommission {
+                chairman: "Xi Jinping".to_string(),
+                vice_chairmen: vec![
+                    "Zhang Youxia".to_string(),
+                    "He Weidong".to_string(),
+                ],
+                members: vec![
+                    "Li Shangfu".to_string(),
+                    "Liu Zhenli".to_string(),
+                    "Miao Hua".to_string(),
+                    "Zhang Shengmin".to_string(),
+                ],
+            },
+            demographics: ChineseDemographics {
+                total_population: 1_412_175_000,
+                ethnic_composition: ChineseEthnicComposition {
+                    han_chinese: 91.11,
+                    zhuang: 1.27,
+                    manchu: 0.86,
+                    hui: 0.79,
+                    miao: 0.79,
+                    uyghur: 0.76,
+                    tibetan: 0.47,
+                    mongol: 0.44,
+                    other_minorities: 3.51,
+                },
+                age_structure: ChineseAgeStructure {
+                    age_0_14: 17.95,
+                    age_15_64: 70.75,
+                    age_65_plus: 11.30,
+                    median_age: 38.4,
+                },
+                urbanization_rate: 64.72,
+                provincial_populations: Self::initialize_provincial_populations(),
+                languages: ChineseLanguages {
+                    mandarin_speakers: 70.0,
+                    wu_speakers: 6.1,
+                    cantonese_speakers: 5.2,
+                    min_speakers: 4.1,
+                    other_dialects: 12.6,
+                    minority_languages: 2.0,
+                },
+            },
+            economic_statistics: ChineseEconomicStatistics {
+                gdp_total_yuan: 121_000_000_000_000,
+                gdp_total_usd: 17_890_000_000_000,
+                gdp_per_capita_yuan: 85_698,
+                gdp_growth_rate: 5.2,
+                inflation_rate: 0.2,
+                unemployment_rate: 5.2,
+                poverty_alleviation: PovertyAlleviationStats {
+                    people_lifted_from_poverty: 98_990_000,
+                    poverty_counties_eliminated: 832,
+                    completion_date: NaiveDate::from_ymd_opt(2020, 11, 23).unwrap(),
+                },
+            },
+            government_budget: ChineseGovernmentBudget {
+                fiscal_year: 2024,
+                total_revenue: 20_289_000_000_000,
+                total_expenditures: 27_460_000_000_000,
+                deficit_surplus: -7_171_000_000_000,
+                major_expenditures: ChineseMajorExpenditures {
+                    defense: 1_665_000_000_000,
+                    education: 4_564_000_000_000,
+                    social_security: 3_987_000_000_000,
+                    healthcare: 2_247_000_000_000,
+                    infrastructure: 5_123_000_000_000,
+                    science_technology: 1_089_000_000_000,
+                    environmental_protection: 789_000_000_000,
+                },
+            },
+        }
+    }
+
+    fn initialize_provincial_populations() -> BTreeMap<String, ChineseProvincePopulation> {
+        let mut populations = BTreeMap::new();
+
+        populations.insert("GD".to_string(), ChineseProvincePopulation {
+            population: 126_012_510,
+            capital_population: 18_676_605, // Guangzhou
+            gdp_billions_yuan: 13570.3,
+            gdp_per_capita_yuan: 107_671,
+        });
+
+        populations.insert("SD".to_string(), ChineseProvincePopulation {
+            population: 101_527_453,
+            capital_population: 9_202_432, // Jinan
+            gdp_billions_yuan: 9197.0,
+            gdp_per_capita_yuan: 90_584,
+        });
+
+        populations.insert("SC".to_string(), ChineseProvincePopulation {
+            population: 83_674_866,
+            capital_population: 20_937_757, // Chengdu
+            gdp_billions_yuan: 5604.0,
+            gdp_per_capita_yuan: 66_990,
+        });
+
+        populations
+    }
+}
+
 impl ChinaNationalFramework {
     async fn initialize() -> Result<Self, String> {
         Ok(Self {
